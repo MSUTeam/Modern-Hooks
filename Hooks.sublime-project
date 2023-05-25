@@ -1,0 +1,17 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+		},
+		{
+			"path": "..\\data_001",
+		},
+		{
+			"path": "..\\mod_msu",
+		},
+		{
+			"path": "..\\mod_hooks",
+		}
+	]
+}
