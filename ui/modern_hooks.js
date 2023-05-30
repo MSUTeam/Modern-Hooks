@@ -14,7 +14,7 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 	SQ.call(this.mSQHandle, "queryData", null, function (_data)
 	{
 		var jsFiles = _data.JS;
-		for (var i = 0; i < jsFiles.length; ++i)
+		for (var i = 0; i < jsFiles.length-1; ++i)
 		{
 			var js = document.createElement("script");
 			js.src = jsFiles[i];
