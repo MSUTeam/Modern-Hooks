@@ -134,13 +134,25 @@
 			foreach (funcName, funcWrapper in _funcWrappers)
 			{
 				local originalFunction = null;
+				local ancestorCounter = 0;
 				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
 				{
 					if (!(funcName in p))
+					{
+						++ancestorCounter;
 						continue;
+					}
 					originalFunction = p[funcName];
 					break;
 				}
+				if (ancestorCounter > 1 && originalFunction != null) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
+				{
+					originalFunction = function(...) {
+						vargv.insert(0, this);
+						return this[_prototype.SuperName][funcName].acall(vargv);
+					}
+				}
+
 				if (originalFunction == null)
 				{
 					this.__warn(format("Mod %s failed to wrap function %s in bb class %s: there is no function to wrap in the class or any of its ancestors", _modID,  funcName, _src));
