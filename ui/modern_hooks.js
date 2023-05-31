@@ -14,10 +14,10 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 	SQ.call(this.mSQHandle, "queryData", null, function (_data)
 	{
 		var jsFiles = _data.JS;
-		for (var i = 0; i < jsFiles.length-1; ++i)
+		for (var i = 0; i < jsFiles.length-1; ++i) // the last one has an onload action appended to it
 		{
 			var js = document.createElement("script");
-			js.src = jsFiles[i];
+			js.src = jsFiles[i].slice(3);
 			document.body.appendChild(js);
 		}
 		var cssFiles = _data.CSS;
@@ -26,7 +26,7 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 			var link = document.createElement("link");
 			link.rel = "stylesheet";
 			link.type = "text/css";
-			link.href = cssFiles[i];
+			link.href = cssFiles[i].slice(3);
 			document.body.appendChild(link);
 		}
 
@@ -54,7 +54,7 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 		else
 		{
 			var js = document.createElement("script");
-			js.src = jsFiles[jsFiles.length-1];
+			js.src = jsFiles[jsFiles.length-1].slice(3);
 			js.onload = function()
 			{
 				resumeInit();
