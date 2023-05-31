@@ -32,7 +32,6 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 
 		var resumeInit = function()
 		{
-			console.error("resumeInit")
 			var engineCall = engine.call;
 			engine.call = function(_functionName, _target, _arg1, _arg2)
 			{
@@ -44,10 +43,8 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 			}
 			Hooks.registerScreens();
 			engine.call = engineCall;
-			console.error("resumeOnInit")
 			SQ.call(self.mSQHandle, "resumeOnInit", null);
 		}
-		console.error("onConnection")
 
 		if (jsFiles.length == 0)
 			resumeInit();
