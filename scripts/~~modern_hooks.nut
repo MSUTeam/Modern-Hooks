@@ -1,4 +1,4 @@
 ::setdebughook(null);
-::Hooks.finalizeLeafHooks();
+::Hooks.__finalizeLeafHooks();
 ::logInfo("=================Finalized Hooks=================");
 //::Hooks.clear()
