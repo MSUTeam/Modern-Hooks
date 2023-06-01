@@ -48,6 +48,16 @@
 		this.CSSFiles.push(_filePath);
 	}
 
+	function addNewFunctions( _modID, _src, _newFunctions )
+	{
+		this.rawHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
+	}
+
+	function addNewLeafFunctions( _modID, _src, _newFunctions )
+	{
+		this.rawLeafHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
+	}
+
 	function wrapFunctions( _modID, _src, _funcWrappers )
 	{
 		this.rawHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
@@ -66,16 +76,6 @@
 	function setLeafFields( _modID, _src, _fieldsToSet )
 	{
 		this.rawLeafHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
-	}
-
-	function addNewFunctions( _modID, _src, _newFunctions )
-	{
-		this.rawHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
-	}
-
-	function addNewLeafFunctions( _modID, _src, _newFunctions )
-	{
-		this.rawLeafHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
 	}
 
 	function __processClass( _src, _prototype )
@@ -125,6 +125,24 @@
 			if (parentsrc in this.Classes && this.Classes[parentsrc].LeafHooks.Hooks.len() != 0)
 				this.Classes[parentsrc].LeafHooks.Descendants.push(_prototype);
 		}
+	}
+
+	function __getAddNewFunctionsHook( _modID, _src, _newFunctions )
+	{
+		return function(_prototype)
+		{
+			foreach (key, func in _newFunctions)
+			{
+				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
+				{
+					if (!(key in p))
+						continue;
+					this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID,  key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
+					break;
+				}
+				_prototype[key] <- func;
+			}
+		};
 	}
 
 	function __getFunctionWrappersHook( _modID, _src, _funcWrappers)
@@ -181,24 +199,6 @@
 				fieldTable[key] <- value;
 			}
 		}
-	}
-
-	function __getAddNewFunctionsHook( _modID, _src, _newFunctions )
-	{
-		return function(_prototype)
-		{
-			foreach (key, func in _newFunctions)
-			{
-				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
-				{
-					if (!(key in p))
-						continue;
-					this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID,  key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
-					break;
-				}
-				_prototype[key] <- func;
-			}
-		};
 	}
 
 	function __finalizeLeafHooks()
