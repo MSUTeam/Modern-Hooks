@@ -68,6 +68,16 @@
 		this.rawLeafHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 	}
 
+	function addFields( _modID, _src, _fieldsToAdd )
+	{
+		this.rawHook(_modID, _src, this.__getAddFieldsHook(_modID, _src, _fieldsToAdd));
+	}
+
+	function addLeafFields( _modID, _src, _fieldsToAdd )
+	{
+		this.rawLeafHook(_modID, _src, this.__getAddFieldsHook(_modID, _src, _fieldsToSet));
+	}
+
 	function setFields( _modID, _src, _fieldsToSet )
 	{
 		this.rawHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
@@ -182,13 +192,31 @@
 		}
 	}
 
+	function __getAddFieldsHook( _modID, _src, _fieldsToAdd )
+	{
+		return function(_prototype)
+		{
+			foreach (fieldName, value in _prototype)
+			{
+				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
+				{
+					if (!(fieldName in p.m))
+						continue;
+					this.__warn(format("Mod %s is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", _modID, fieldName, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
+					break;
+				}
+				_prototype.m[fieldName] <- value;
+			}
+		}
+	}
+
 	function __getSetFieldsHook( _modID, _src, _fieldsToSet )
 	{
 		return function(_prototype)
 		{
 			foreach (key, value in _fieldsToSet)
 			{
-				local fieldTable = _prototype.m;
+				local fieldTable = null;
 				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
 				{
 					if (!(key in p.m))
@@ -196,7 +224,12 @@
 					fieldTable = p.m;
 					break;
 				}
-				fieldTable[key] <- value;
+				if (fieldTable == null)
+				{
+					this.__warn(format("Mod %s tried to set field %s in bb class %s, but the file doesn't exist in the class or any of its ancestors", _modID, key, _src));
+					continue;
+				}
+				fieldTable[key] = value;
 			}
 		}
 	}
