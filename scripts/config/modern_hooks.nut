@@ -185,18 +185,18 @@
 
 	function __getAddNewFunctionsHook( _modID, _src, _newFunctions )
 	{
-		return function(prototype)
+		return function(_prototype)
 		{
 			foreach (key, func in _newFunctions)
 			{
-				for (local p = prototype; "SuperName" in p; p = p[p.SuperName])
+				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
 				{
 					if (!(key in p))
 						continue;
-					this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID,  key, _src, p == prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
+					this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID,  key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
 					break;
 				}
-				prototype[key] <- func;
+				_prototype[key] <- func;
 			}
 		};
 	}
