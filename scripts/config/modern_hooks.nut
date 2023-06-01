@@ -16,13 +16,13 @@
 	MainMenuState = null,
 	DebugMode = true
 
-	function rawHook( _src, _rawHook ) // I want to add a modID here
+	function rawHook( _modID, _src, _rawHook ) // _modID gets ignored for now ig
 	{
 		this.__initClass(_src);
 		this.Classes[_src].RawHooks.Hooks.push(_rawHook);
 	}
 
-	function rawLeafHook( _src, _rawLeafHook )
+	function rawLeafHook( _modID, _src, _rawLeafHook ) // _modID gets ignored for now ig
 	{
 		this.__initClass(_src);
 		this.Classes[_src].LeafHooks.Hooks.push(_rawLeafHook);
@@ -50,32 +50,32 @@
 
 	function wrapFunctions( _modID, _src, _funcWrappers )
 	{
-		this.rawHook(_src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
+		this.rawHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 	}
 
 	function wrapLeafFunctions( _modID, _src, _funcWrappers )
 	{
-		this.rawLeafHook(_src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
+		this.rawLeafHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 	}
 
 	function setFields( _modID, _src, _fieldsToSet )
 	{
-		this.rawHook(_src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
+		this.rawHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
 	}
 
 	function setLeafFields( _modID, _src, _fieldsToSet )
 	{
-		this.rawLeafHook(_src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
+		this.rawLeafHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
 	}
 
 	function addNewFunctions( _modID, _src, _newFunctions )
 	{
-		this.rawHook(_src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
+		this.rawHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
 	}
 
 	function addNewLeafFunctions( _modID, _src, _newFunctions )
 	{
-		this.rawLeafHook(_src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
+		this.rawLeafHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
 	}
 
 	function __processClass( _src, _prototype )
