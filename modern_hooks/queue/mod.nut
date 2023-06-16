@@ -4,6 +4,11 @@ local function msu_SemVer_isSemVer( _string )
 	return ::Hooks.__SemVerRegex.capture(_string) != null;
 }
 
+local msu_regexMatch = function( _capture, _string, _group )
+{
+	return _capture[_group].end > 0 && _capture[_group].begin < _string.len() ? _string.slice(_capture[_group].begin, _capture[_group].end) : null;
+}
+
 ::Hooks.Mod <- class
 {
 	ID = null;
@@ -28,7 +33,7 @@ local function msu_SemVer_isSemVer( _string )
 		this.ID = _id;
 		this.Name = _name;
 		this.MetaData = _metaData;
-		this.CompatibilityData = {};
+		this.CompatibilityData = [];
 		this.QueuedFunctions = [];
 		this.addQueuedFunction(null);
 	}
@@ -41,6 +46,62 @@ local function msu_SemVer_isSemVer( _string )
 	function getName()
 	{
 		return this.Name;
+	}
+
+	function __parseOperatorString( _operatorString )
+	{
+		switch (operator)
+		{
+			case "==":
+			case "=":
+				return ::Hooks.Operator.EQ;
+			case "!":
+			case "!=":
+				return ::Hooks.Operator.NE;
+			case ">":
+				return ::Hooks.Operator.GT;
+			case ">=":
+				return ::Hooks.Operator.GE;
+			case "<":
+				return ::Hooks.Operator.LT;
+			case "<=":
+				return ::Hooks.Operator.LE;
+		}
+	}
+
+	function __parseCompatibilityData( _id, _data, _compatibilityType )
+	{
+		local name = "Name" in _data ? _data.Name : null;
+		local version = "Version" in _data ? _data.Version : null;
+		local operator = null;
+		if (version != null)
+		{
+			local capture = ::Hooks.__VersionOperatorRegex.capture(version);
+			if (capture == null)
+				::Hooks.__errorAndThrow("Mod version information needs to be prefixed with =/==/!/!=/</<=/>/>=, for example \">=1.0.0\"");
+			local operator = msu_regexMatch(capture, version, 0);
+			version = version.slice(operator.len());
+			operator = this.__parseOperatorString(operator);
+		}
+		return ::Hooks.CompatibilityData(_id, _compatibilityType, version, operator, name);
+	}
+
+	function declareCompatibilityData( _data )
+	{
+		if ("Requirements" in _data)
+		{
+			foreach (modID, modInfo in _data.Requirements)
+			{
+				this.CompatibilityData.push(this.__parseCompatibilityData(modID, modInfo, ::Hooks.CompatibilityType.Requirement));
+			}
+		}
+		if ("Incompatibilities" in _data)
+		{
+			foreach (modID, modInfo in _data.Incompatibilities)
+			{
+				this.CompatibilityData.push(this.__parseCompatibilityData(modID, modInfo, ::Hooks.CompatibilityType.Incompatibility));
+			}
+		}
 	}
 
 	function addQueuedFunction( _id )
@@ -79,64 +140,11 @@ local function msu_SemVer_isSemVer( _string )
 		return this.MetaData;
 	}
 
-	function require( _modID )
-	{
-		this.CachedModID = _modID;
-		this.CompatibilityData[_modID] <- ::Hooks.CompatibilityData(_modID, ::Hooks.CompatibilityType.Requirement);
-		this.loadAfter(_modID);
-		return this;
-	}
-
-	function incompatibleWith( _modID )
-	{
-		this.CachedModID = _modID;
-		this.CompatibilityData[_modID] <- ::Hooks.CompatibilityData(_modID, ::Hooks.CompatibilityType.Incompatibility);
-		return this;
-	}
-
 	function __validateCachedID()
 	{
 		if (this.CachedModID in this.CompatibilityData)
 			return;
 		::Hooks.__errorAndThrow("You must first declare a requirement/incompatibility relationship with a mod before specifying the versions that relationship applies to");
-	}
-
-	function setVersionRequirements( _version, _operator )
-	{
-		this.__validateCachedID();
-		this.CompatibilityData[this.CachedModID].setVersionRequirements(_version, _operator);
-		this.CachedModID = null;
-		return this;
-	}
-
-	function minVersion( _version )
-	{
-		return this.setVersionRequirements(_version, ::Hooks.Operator.GE);
-	}
-
-	function greaterThanVersion( _version )
-	{
-		return this.setVersionRequirements(_version, ::Hooks.Operator.GT);
-	}
-
-	function maxVersion( _version )
-	{
-		return this.setVersionRequirements(_version, ::Hooks.Operator.LE);
-	}
-
-	function lessThanVersion( _version )
-	{
-		return this.setVersionRequirements(_version, ::Hooks.Operator.LT);
-	}
-
-	function version( _version )
-	{
-		return this.setVersionRequirements(_version, ::Hooks.Operator.EQ);
-	}
-
-	function notVersion( _version )
-	{
-		return this.setVersionRequirements(_version, ::Hooks.Operator.NE);
 	}
 
 	function loadAfter( _modID = null, _functionID = null )
