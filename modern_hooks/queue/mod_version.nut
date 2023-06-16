@@ -131,4 +131,9 @@ local msu_String_isInteger = function( _string )
 		else if (this.PreRelease.len() < _other.PreRelease.len()) return -1;
 		return 0;
 	}
+
+	function _tostring()
+	{
+		return this.getVersionString();
+	}
 }

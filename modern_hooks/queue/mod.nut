@@ -183,6 +183,6 @@ local function msu_SemVer_isSemVer( _string )
 
 	function getVersionString()
 	{
-		return typeof this.Version == "float" ? this.Version.tostring() : this.Version.getVersionString();
+		return this.Version.tostring();
 	}
 }
