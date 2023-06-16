@@ -42,11 +42,20 @@ local function msu_SemVer_isSemVer( _string )
 	Version = null;
 	Operator = null;
 	CompatibilityType = null;
+	ModName = null;
 
-	constructor( _modID, _compatibilityType )
+	constructor( _modID, _compatibilityType, _version, _operator, _modName = null )
 	{
+		if (_modName == null)
+			_modName = _modID;
 		this.ModID = _modID;
 		this.CompatibilityType = _compatibilityType;
+		if (msu_SemVer_isSemVer(_version))
+			this.Version = ::Hooks.ModVersion(_version);
+		else
+			this.Version = _version.tofloat(); // purely for backwards compatibility with Adam's Hooks
+		this.Operator = _operator;
+		this.ModName = _modName;
 	}
 
 	function getModID()
@@ -54,17 +63,9 @@ local function msu_SemVer_isSemVer( _string )
 		return this.ModID;
 	}
 
-	function setVersionRequirements( _version, _operator )
+	function getModName()
 	{
-		if (msu_SemVer_isSemVer(_version))
-		{
-			this.Version = ::Hooks.ModVersion(_version);
-		}
-		else
-		{
-			this.Version = _version.tofloat(); // purely for backwards compatibility with Adam's Hooks
-		}
-		this.Operator = _operator;
+		return this.ModName;
 	}
 
 	function __processCmpResult( _cmpResult )
