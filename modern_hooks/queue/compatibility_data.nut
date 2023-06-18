@@ -103,6 +103,33 @@ local function msu_SemVer_isSemVer( _string )
 		return this.__processCmpResult((_mod.getVersion() <=> this.Version) * cmpTypeModifier);
 	}
 
+	function getErrorString()
+	{
+		local ret = "";
+		switch (this.Operator)
+		{
+			case ::Hooks.Operator.EQ:
+				break;
+			case ::Hooks.Operator.NE:
+				ret += "not equal to"
+				break;
+			case ::Hooks.Operator.LT:
+				ret += "older than";
+				break;
+			case ::Hooks.Operator.LE:
+				ret += "older than or equal to";
+				break;
+			case ::Hooks.Operator.GT:
+				ret += "greater than";
+				break;
+			case ::Hooks.Operator.GE:
+				ret += "greater than or equal to";
+				break;
+		}
+		ret += " " + (typeof this.Version == "float" ? this.Version.tostring() : this.Version.getVersionString());
+		return ret;
+	}
+
 	function validate( _mods )
 	{
 		if (this.CompatibilityType == ::Hooks.CompatibilityType.Requirement)
