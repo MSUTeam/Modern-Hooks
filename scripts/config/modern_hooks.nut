@@ -405,6 +405,13 @@
 		throw _text;
 	}
 
+	function __errorAndQuit( _text )
+	{
+		::logError(_text);
+		if ("MSU" in this.getroottable())
+			::MSU.Popup.showRawText(_text, true);
+	}
+
 	function __error(_text)
 	{
 		::logError(_text);
