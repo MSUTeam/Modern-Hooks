@@ -35,6 +35,7 @@
 			this.__errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
 		}
 		this.Mods[_modID] <- ::Hooks.Mod(_modID, _version, _modName, _metaData);
+		this.__inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
 		return this.Mods[_modID];
 	}
 
@@ -124,7 +125,7 @@
 		{
 			local mod = queuedFunction.getMod();
 			local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
-			this.__inform(format("Executing queued function %i for %s (%s) version %s.", queuedFunction.getFunctionID(), mod.getID(), mod.getName(), versionString));
+			this.__inform(format("Executing queued function [emph]%i[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), mod.getName(), mod.getID(), versionString));
 			queuedFunction.getFunction()();
 		}
 	}
@@ -153,7 +154,7 @@
 			if (!(bucketType in buckets))
 				continue;
 			local funcs = this.__sortQueue(buckets[bucketType]);
-			::Hooks.__inform(format("-----------------Running queue bucket %s-----------------", ::Hooks.getNameForQueueBucket(bucketType)));
+			::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.getNameForQueueBucket(bucketType)));
 			this.__executeQueuedFunctions(funcs);
 		}
 	}
@@ -458,14 +459,13 @@
 
 	function __inform( _text )
 	{
-		// if ("MSU" in this.getroottable())
-		// 	::MSU.Popup.showRawText(_text);
-		::logInfo(_text);
+		_text = ::String.replace(_text, "[emph]", "<span style=\"color:#00FFFF\">")
+		_text = ::String.replace(_text, "[/emph]", "</span>")
+		::logInfo("<span style=\"color:#9932CC;\">" + _text + "</span>");
 	}
 }
-// init semver regexes
 
-::logInfo("=================Initialized Hooks=================");
+::Hooks.__inform("=================Initialized Hooks=================");
 foreach (file in ::IO.enumerateFiles("modern_hooks/queue"))
 	::include(file);
 
