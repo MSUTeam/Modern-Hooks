@@ -113,7 +113,7 @@ local function msu_SemVer_isSemVer( _string )
 				return ::Hooks.CompatibilityCheckResult.Success;
 			return this.validateModVersion(_mods[this.ModID]);
 		}
-		if (!(this.ModID in _mods));
+		if (!(this.ModID in _mods))
 			return ::Hooks.CompatibilityCheckResult.Success;
 		if (this.Version == null)
 			return ::Hooks.CompatibilityCheckResult.ModPresent;
