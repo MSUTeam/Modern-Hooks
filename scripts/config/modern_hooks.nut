@@ -17,7 +17,7 @@
 	MainMenuState = null,
 	DebugMode = true,
 	__SemVerRegex = regexp("^((?:(?:0|[1-9]\\d*)\\.){2}(?:0|[1-9]\\d*))(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"),
-
+	__VersionOperatorRegex = regexp("^((?:!|=|<|>)?=?)"),
 	function register( _modID, _version, _modName, _metaData = null )
 	{
 		if (_metaData == null)
@@ -27,6 +27,7 @@
 			this.__errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
 		}
 		this.Mods[_modID] <- ::Hooks.Mod(_modID, _version, _modName, _metaData);
+		return this.Mods[_modID];
 	}
 
 	function getMods()
@@ -55,7 +56,7 @@
 				if (result == ::Hooks.CompatibilityCheckResult.Success)
 					continue;
 				compatErrors.push({
-					Source = Mod,
+					Source = mod,
 					Target = compatibilityData.getModID(),
 					Reason = result
 				});
@@ -65,9 +66,37 @@
 			return;
 		foreach (error in compatErrors)
 		{
-			this.__error(format("Source: %s, Target: %s, Reason: %i", error.Source, error.Target, error.Reason)) // for now
+			::MSU.Log.printData(error)
+			this.__error(format("Source: %s, Target: %s, Reason: %i", error.Source.getID(), error.Target, error.Reason)) // for now
 		}
 		this.__errorAndThrow("Errors occured when validating mod compatibility, the game was therefore not loaded correctly");
+	}
+
+	function __sortQueue( _queuedFunctions )
+	{
+		local graph = ::Hooks.QueueGraph();
+		foreach (func in _queuedFunctions)
+		{
+			foreach (before, table in func.getLoadBefore())
+				graph.addEdge(before + "_end", func);
+			foreach (after, table in func.getLoadAfter())
+				graph.addEdge(func, after + "_start");
+			graph.addEdge(func.getModID() + "_start", func)
+			graph.addEdge(func, func.getModID() + "_end")
+		};
+		local sortedNodes = graph.topologicalSort();
+		return sortedNodes.filter(@(_i, _e) _e instanceof ::Hooks.QueuedFunction);
+	}
+
+	function __executeQueuedFunctions( _queuedFunctions )
+	{
+		foreach (queuedFunction in _queuedFunctions)
+		{
+			local mod = queuedFunction.getMod();
+			local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
+			this.__inform(format("Executing queued function %i for %s (%s) version %s.", queuedFunction.getFunctionID(), mod.getID(), mod.getName(), versionString));
+			queuedFunction.getFunction()();
+		}
 	}
 
 	function __runQueue()
@@ -75,79 +104,27 @@
 		this.__validateModCompatibility();
 		// Adapted from mod_hooks with Adam's permission
 
-		local queuedMods = {};
-		local loadAfterTable = {};
+		local buckets = {}; // I hate how I've had to do these buckets with MSU enums
 		foreach (mod in this.getMods())
 		{
-			if (!(mod.hasQueuedFunction()))
+			foreach (func in mod.getQueuedFunctions())
+			{
+				if (!(func.getBucket() in buckets))
+					buckets[func.getBucket()] <- [];
+				buckets[func.getBucket()].push(func);
+			}
+		}
+		local bucketTypes = [];
+		foreach (bucketType in ::Hooks.QueueBucket)
+			bucketTypes.push(bucketType);
+		bucketTypes.sort();
+		foreach (bucketType in bucketTypes)
+		{
+			if (!(bucketType in buckets))
 				continue;
-			queuedMods[mod.getID()] <- mod;
-
-			local queuedFunction = mod.getQueuedFunction();
-			if (!(mod.getID() in loadAfterTable))
-				loadAfterTable[mod.getID()] <- [];
-			loadAfterTable[mod.getID()].extend(queuedFunction.getLoadAfter());
-
-			foreach (loadAfterModID in queuedFunction.getLoadBefore())
-			{
-				if (!(loadAfterModID in loadAfterTable))
-					loadAfterTable[loadAfterModID] <- [];
-				loadAfterTable[loadAfterModID].push(queuedFunction.getFullID())
-			}
-		}
-
-		local setsToLoad = [];
-		local heights = {};
-		local visit = null;
-		visit = function(_modID, _chain)
-		{
-			_chain.push(_modID);
-			local height;
-			if (_modID in heights)
-			{
-				height = heights[_modID];
-				if (height == 0)
-				{
-					this._error("Dependency conflict involving mods: " + _chain.reduce(@(_a, _b)_a.getName() + " -> " + _b.getName()));
-					throw "Queue Error";
-				}
-			}
-			else
-			{
-				heights[_modID] <- 0;
-				height = 0;
-				if (_modID in loadAfterTable)
-				{
-					foreach (loadBeforeModID in loadAfterTable[_modID])
-					{
-						if (!(loadBeforeModID in queuedMods))
-							continue;
-						height = ::Math.max(height, visit(loadBeforeModID, _chain))
-					}
-				}
-				if (height == setsToLoad.len())
-					setsToLoad.push([]);
-				setsToLoad[height++].push(_modID);
-				heights[_modID] = height;
-			}
-			_chain.pop();
-			return height;
-		}
-
-		foreach (queuedMod in queuedMods)
-			visit(queuedMod.getID(), []);
-		foreach (set in setsToLoad)
-		{
-			foreach (modID in set)
-			{
-				local mod = this.getMods()[modID];
-				foreach (queuedFunction in mod.getQueuedFunctions())
-				{
-					local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
-					this.__inform(format("Executing queued function for %s (%s) version %s.", mod.getID(), mod.getName(), versionString));
-					queuedFunction.getFunction()();
-				}
-			}
+			local funcs = this.__sortQueue(buckets[bucketType]);
+			::Hooks.__inform(format("Running queue bucket %s", ::Hooks.getNameForQueueBucket(bucketType)));
+			this.__executeQueuedFunctions(funcs);
 		}
 	}
 
@@ -449,6 +426,8 @@
 		::logInfo(_text);
 	}
 }
+// init semver regexes
+
 ::logInfo("=================Initialized Hooks=================");
 foreach (file in ::IO.enumerateFiles("modern_hooks/queue"))
 	::include(file);

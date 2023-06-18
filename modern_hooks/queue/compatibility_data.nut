@@ -50,7 +50,9 @@ local function msu_SemVer_isSemVer( _string )
 			_modName = _modID;
 		this.ModID = _modID;
 		this.CompatibilityType = _compatibilityType;
-		if (msu_SemVer_isSemVer(_version))
+		if (_version == null)
+			this.Version = _version;
+		else if (msu_SemVer_isSemVer(_version))
 			this.Version = ::Hooks.ModVersion(_version);
 		else
 			this.Version = _version.tofloat(); // purely for backwards compatibility with Adam's Hooks

@@ -51,7 +51,9 @@ local function inverter(_operator)
 		::Hooks.__errorAndThrow(format("Mod %s is trying to queue without registering first", codeName));
 
 	// parse expression using mod_hooks function
-	local match = @(s,m,i) m[i].end > 0 && m[i].begin < s.len() ? s.slice(m[i].begin, m[i].end) : null;
+	local match = function(s,m,i) {
+		return m[i].end > 0 && m[i].begin < s.len() ? s.slice(m[i].begin, m[i].end) : null
+	};
 	if (expr == "" || expr == null)
 		expr = []
 	else
@@ -66,59 +68,55 @@ local function inverter(_operator)
 
 
 	local mod = ::Hooks.getMod(codeName);
-	mod.queueFunction(func);
+	local compatibilityData = {
+		Requirements = {},
+		Incompatibilities = {}
+	};
+	local loadOrderData = {
+		After = [],
+		Before = []
+	}
 	// now convert into modern_hooks
 	foreach (expression in expr)
 	{
 		local invert = false;
+		local requirement = null;
 		switch (expression.op)
 		{
 			case null:
-				mod.require(expression.modName);
+				requirement = true;
+				compatibilityData.Requirements[expression.modName] <- {};
+				loadOrderData.After.push({ID = expression.modName});
 				break;
 			case '!':
-				mod.incompatibleWith(expression.modName);
+				requirement = false;
+				compatibilityData.Incompatibilities[expression.modName] <- {};
 				break;
 			case '<':
 				invert = true;
-				mod.loadAfter(expression.modName);
+				loadOrderData.After.push({ID = expression.modName});
 				break;
 			case '>':
 				invert = true;
-				mod.loadBefore(expression.modName);
+				loadOrderData.Before.push(expression.modName); // TODO adjust to be as above, currently only this way for testing purposes
 				break;
 		}
 		if (expression.version == null)
 			continue;
 		if (invert)
 		{
-			mod.incompatibleWith(expression.modName);
+			compatibilityData.Incompatibilities[expression.modName] <- {}
+			requirement = false;
 			expression.verOp = inverter(expression.verOp)
 		}
-
-		switch (expression.verOp)
-		{
-			case null:
-			case "=":
-				mod.version(expression.version);
-				break;
-			case "!=":
-				mod.notVersion(expression.version);
-				break;
-			case "<=":
-				mod.maxVersion(expression.version);
-				break;
-			case "<":
-				mod.greaterThanVersion(expression.version);
-				break;
-			case ">=":
-				mod.minVersion(expression.version);
-				break;
-			case ">":
-				mod.lessThanVersion(expression.version);
-				break;
-		}
+		local currentMod = compatibilityData[requirement ? "Requirements" : "Incompatibilities"][expression.modName];
+		if (expression.verOp == null)
+			expression.verOp = "=";
+		currentMod.Version <- expression.verOp + expression.version;
 	}
+	mod.declareCompatibilityData(compatibilityData);
+	::MSU.Log.printData(loadOrderData, 2)
+	mod.queueFunction(loadOrderData, func);
 }
 
 ::mods_getRegisteredMod = function( _modID )

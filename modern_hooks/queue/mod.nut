@@ -35,7 +35,6 @@ local msu_regexMatch = function( _capture, _string, _group )
 		this.MetaData = _metaData;
 		this.CompatibilityData = [];
 		this.QueuedFunctions = [];
-		this.addQueuedFunction(null);
 	}
 
 	function getID()
@@ -50,10 +49,11 @@ local msu_regexMatch = function( _capture, _string, _group )
 
 	function __parseOperatorString( _operatorString )
 	{
-		switch (operator)
+		switch (_operatorString)
 		{
 			case "==":
 			case "=":
+			case "":
 				return ::Hooks.Operator.EQ;
 			case "!":
 			case "!=":
@@ -73,13 +73,17 @@ local msu_regexMatch = function( _capture, _string, _group )
 	{
 		local name = "Name" in _data ? _data.Name : null;
 		local version = "Version" in _data ? _data.Version : null;
+		if (typeof version != "string" && version != null)
+			version = version.tostring();
 		local operator = null;
 		if (version != null)
 		{
 			local capture = ::Hooks.__VersionOperatorRegex.capture(version);
 			if (capture == null)
-				::Hooks.__errorAndThrow("Mod version information needs to be prefixed with =/==/!/!=/</<=/>/>=, for example \">=1.0.0\"");
-			local operator = msu_regexMatch(capture, version, 0);
+				::Hooks.__errorAndThrow(format("Mod version information needs to be prefixed with =/==/!/!=/</<=/>/>=, for example \">=1.0.0\" or \"!1.12421\" (for non SemVer mods), currently : \"%s\"", version));
+			operator = msu_regexMatch(capture, version, 0);
+			if (operator == null)
+				operator = "";
 			version = version.slice(operator.len());
 			operator = this.__parseOperatorString(operator);
 		}
@@ -104,79 +108,19 @@ local msu_regexMatch = function( _capture, _string, _group )
 		}
 	}
 
-	function addQueuedFunction( _id )
-	{
-		this.QueuedFunctions.push(::Hooks.QueuedFunction(_id, this));
-	}
-
-	function getQueuedFunction( _id = null )
-	{
-		foreach (func in this.QueuedFunctions)
-		{
-			if (func.getID() == _id)
-				return func;
-		}
-		return null;
-	}
-
-	function hasQueuedFunction( _id = null )
-	{
-		local maybeFunc = this.getQueuedFunction(_id);
-		return maybeFunc != null && maybeFunc.getFunction() != null;
-	}
-
 	function getQueuedFunctions()
 	{
 		return this.QueuedFunctions;
 	}
 
-	function queueFunction( _function, _id = null )
+	function queueFunction( _loadOrderData, _function, _bucket = null )
 	{
-		this.getQueuedFunction(_id).setFunction(_function);
+		this.QueuedFunctions.push(::Hooks.QueuedFunction(this, _function, _loadOrderData, _bucket));
 	}
 
 	function getMetaData()
 	{
 		return this.MetaData;
-	}
-
-	function __validateCachedID()
-	{
-		if (this.CachedModID in this.CompatibilityData)
-			return;
-		::Hooks.__errorAndThrow("You must first declare a requirement/incompatibility relationship with a mod before specifying the versions that relationship applies to");
-	}
-
-	function loadAfter( _modID = null, _functionID = null )
-	{
-		if (_modID == null)
-			_modID = this.CachedModID;
-		else
-			this.CachedModID = _modID;
-
-		local func = this.getQueuedFunction(_functionID);
-		local idx = func.LoadBefore.find(_modID)
-		if (idx != null)
-			func.LoadBefore.remove(idx);
-
-		func.LoadAfter.push(_modID);
-		return this;
-	}
-
-	function loadBefore( _modID = null, _functionID = null )
-	{
-		if (_modID == null)
-			_modID = this.CachedModID;
-		else
-			this.CachedModID = _modID;
-
-		local func = this.getQueuedFunction(_functionID);
-		local idx = func.LoadAfter.find(_modID)
-		if (idx != null)
-			func.LoadAfter.remove(idx);
-
-		func.LoadBefore.push(_modID);
-		return this;
 	}
 
 	function getCompatibilityData()
