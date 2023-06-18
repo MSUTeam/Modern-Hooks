@@ -111,22 +111,22 @@ local function msu_SemVer_isSemVer( _string )
 			case ::Hooks.Operator.EQ:
 				break;
 			case ::Hooks.Operator.NE:
-				ret += "not equal to"
+				ret += "not equal to "
 				break;
 			case ::Hooks.Operator.LT:
-				ret += "older than";
+				ret += "older than ";
 				break;
 			case ::Hooks.Operator.LE:
-				ret += "older than or equal to";
+				ret += "older than or equal to ";
 				break;
 			case ::Hooks.Operator.GT:
-				ret += "greater than";
+				ret += "greater than ";
 				break;
 			case ::Hooks.Operator.GE:
-				ret += "greater than or equal to";
+				ret += "greater than or equal to ";
 				break;
 		}
-		ret += " " + (typeof this.Version == "float" ? this.Version.tostring() : this.Version.getVersionString());
+		ret += typeof this.Version == "float" ? this.Version.tostring() : this.Version.getVersionString();
 		return ret;
 	}
 
