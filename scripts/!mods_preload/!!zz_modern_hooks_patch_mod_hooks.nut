@@ -94,11 +94,11 @@ local function inverter(_operator)
 				break;
 			case '<':
 				invert = true;
-				loadOrderData.After.push({ID = expression.modName});
+				loadOrderData.Before.push({ID = expression.modName});
 				break;
 			case '>':
 				invert = true;
-				loadOrderData.Before.push(expression.modName); // TODO adjust to be as above, currently only this way for testing purposes
+				loadOrderData.After.push(expression.modName); // TODO adjust to be as above, currently only this way for testing purposes
 				break;
 		}
 		if (expression.version == null)
@@ -115,7 +115,6 @@ local function inverter(_operator)
 		currentMod.Version <- expression.verOp + expression.version;
 	}
 	mod.declareCompatibilityData(compatibilityData);
-	::MSU.Log.printData(loadOrderData, 2)
 	mod.queueFunction(loadOrderData, func);
 }
 
@@ -140,7 +139,6 @@ local function inverter(_operator)
 		}
 	}
 	meta.FriendlyName <- mod.getName();
-	if (mod.getVersion())
 	return meta;
 }
 
