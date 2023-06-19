@@ -252,7 +252,7 @@
 		if (!(_src in this.Classes)) // this
 			return;
 		this.__processHooks(_prototype, this.Classes[_src].RawHooks.Hooks);
-		this.__registerForAncestorLeafHooks(_prototype); // needs adjsutment, relies on debugmode rn
+		this.__registerForAncestorLeafHooks(_prototype, _src); // needs adjsutment, relies on debugmode rn
 		this.Classes[_src].Processed = true;
 	}
 
@@ -278,16 +278,18 @@
 			hook(_prototype);
 	}
 
-	function __registerForAncestorLeafHooks( _prototype )
+	function __registerForAncestorLeafHooks( _prototype, _src )
 	{
 		if (!("SuperName" in _prototype))
 			return;
-		for (local p = _prototype[_prototype.SuperName]; "SuperName" in p; p = p[p.SuperName])
+		local src = _src;
+		local p = _prototype;
+		do
 		{
-			local parentsrc = ::IO.scriptFilenameByHash(p.ClassNameHash);
-			if (parentsrc in this.Classes && this.Classes[parentsrc].LeafHooks.Hooks.len() != 0)
-				this.Classes[parentsrc].LeafHooks.Descendants.push(_prototype);
+			if (src in this.Classes && this.Classes[src].LeafHooks.Hooks.len() != 0)
+				this.Classes[src].LeafHooks.Descendants.push(_prototype);
 		}
+		while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
 	}
 
 	function __getAddNewFunctionsHook( _modID, _src, _newFunctions )
