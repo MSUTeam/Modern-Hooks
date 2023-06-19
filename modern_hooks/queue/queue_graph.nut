@@ -68,7 +68,7 @@
 		local cycleNodes = this.findCycle();
 		if (cycleNodes != null)
 		{
-			::Hooks.__errorAndThrow(format("There is a dependency cycle between the Mods: %s",
+			::Hooks.__errorAndQuit(format("There is a dependency cycle between the Mods: %s",
 				cycleNodes.filter(@(_i, _e)_e instanceof ::Hooks.QueuedFunction)
 					.map(@(_e) format("%s (%s function: %i)", _e.getMod().getID(), _e.getMod().getName(), _e.getFunctionID()) )
 					.reduce(@(_a, _b) _a + ", " + _b)));
