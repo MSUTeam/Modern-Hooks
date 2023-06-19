@@ -304,7 +304,7 @@
 					this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID, key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
 					break;
 				}
-				while ("SuperName" in p && p = p[p.SuperName])
+				while ("SuperName" in p && (p = p[p.SuperName]))
 				_prototype[key] <- func;
 			}
 		};
@@ -329,7 +329,7 @@
 					originalFunction = p[funcName];
 					break;
 				}
-				while ("SuperName" in p && p = p[p.SuperName])
+				while ("SuperName" in p && (p = p[p.SuperName]))
 				if (ancestorCounter > 1 && originalFunction != null) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
 				{
 					originalFunction = function(...) {
@@ -363,7 +363,7 @@
 					this.__warn(format("Mod %s is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", _modID, fieldName, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
 					break;
 				}
-				while ("SuperName" in p && p = p[p.SuperName])
+				while ("SuperName" in p && (p = p[p.SuperName]))
 				_prototype.m[fieldName] <- value;
 			}
 		}
@@ -384,7 +384,7 @@
 					fieldTable = p.m;
 					break;
 				}
-				while ("SuperName" in p && p = p[p.SuperName])
+				while ("SuperName" in p && (p = p[p.SuperName]))
 				if (fieldTable == null)
 				{
 					this.__warn(format("Mod %s tried to set field %s in bb class %s, but the file doesn't exist in the class or any of its ancestors", _modID, key, _src));
