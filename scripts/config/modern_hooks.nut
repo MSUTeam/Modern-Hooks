@@ -296,13 +296,15 @@
 		{
 			foreach (key, func in _newFunctions)
 			{
-				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
+				local p = _prototype;
+				do
 				{
 					if (!(key in p))
 						continue;
 					this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID, key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
 					break;
 				}
+				while ("SuperName" in p && p = p[p.SuperName])
 				_prototype[key] <- func;
 			}
 		};
@@ -316,7 +318,8 @@
 			{
 				local originalFunction = null;
 				local ancestorCounter = 0;
-				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
+				local p = _prototype;
+				do
 				{
 					if (!(funcName in p))
 					{
@@ -326,6 +329,7 @@
 					originalFunction = p[funcName];
 					break;
 				}
+				while ("SuperName" in p && p = p[p.SuperName])
 				if (ancestorCounter > 1 && originalFunction != null) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
 				{
 					originalFunction = function(...) {
@@ -351,13 +355,15 @@
 		{
 			foreach (fieldName, value in _prototype)
 			{
-				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
+				local p = _prototype;
+				do
 				{
 					if (!(fieldName in p.m))
 						continue;
 					this.__warn(format("Mod %s is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", _modID, fieldName, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
 					break;
 				}
+				while ("SuperName" in p && p = p[p.SuperName])
 				_prototype.m[fieldName] <- value;
 			}
 		}
@@ -370,13 +376,15 @@
 			foreach (key, value in _fieldsToSet)
 			{
 				local fieldTable = null;
-				for (local p = _prototype; "SuperName" in p; p = p[p.SuperName])
+				local p = _prototype;
+				do
 				{
 					if (!(key in p.m))
 						continue;
 					fieldTable = p.m;
 					break;
 				}
+				while ("SuperName" in p && p = p[p.SuperName])
 				if (fieldTable == null)
 				{
 					this.__warn(format("Mod %s tried to set field %s in bb class %s, but the file doesn't exist in the class or any of its ancestors", _modID, key, _src));
