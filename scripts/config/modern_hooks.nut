@@ -334,9 +334,10 @@
 				while ("SuperName" in p && (p = p[p.SuperName]))
 				if (ancestorCounter > 1 && originalFunction != null) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
 				{
+					local funcNameCache = funcName;
 					originalFunction = function(...) {
 						vargv.insert(0, this);
-						return this[_prototype.SuperName][funcName].acall(vargv);
+						return this[_prototype.SuperName][funcNameCache].acall(vargv);
 					}
 				}
 
