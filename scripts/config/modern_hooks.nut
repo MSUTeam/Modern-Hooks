@@ -343,7 +343,8 @@
 
 				if (originalFunction == null)
 				{
-					this.__warn(format("Mod %s failed to wrap function %s in bb class %s: there is no function to wrap in the class or any of its ancestors", _modID,  funcName, _src));
+					local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
+					this.__warn(format("Mod %s failed to wrap function %s in bb class %s: there is no function to wrap in the class or any of its ancestors", _modID,  funcName, src));
 					// should we instead pass a `@(...)null`? this would allow mods to use this with each others functions, but they'd have to handle nulls returns... not sure which approach is best
 					continue;
 				}
