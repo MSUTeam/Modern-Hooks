@@ -171,12 +171,22 @@
 
 	function rawHook( _modID, _src, _rawHook ) // _modID gets ignored for now ig
 	{
+		if (!::Hooks.hasMod(_modID))
+		{
+			::Hooks.__error("To hook using modern hooks, you must first register your mod with ::Hooks.register");
+			return;
+		}
 		this.__initClass(_src);
 		this.Classes[_src].RawHooks.Hooks.push(_rawHook);
 	}
 
 	function rawLeafHook( _modID, _src, _rawLeafHook ) // _modID gets ignored for now ig
 	{
+		if (!::Hooks.hasMod(_modID))
+		{
+			::Hooks.__error("To hook using modern hooks, you must first register your mod with ::Hooks.register");
+			return;
+		}
 		this.__initClass(_src);
 		this.Classes[_src].LeafHooks.Hooks.push(_rawLeafHook);
 	}

@@ -3,7 +3,7 @@ if (!("mods_hookExactClass" in this.getroottable()))
 
 ::mods_hookExactClass = function( name, func )
 {
-	::Hooks.rawHook("mod_hooks_patch", "scripts/" + name, func)
+	::Hooks.rawHook("mod_hooks", "scripts/" + name, func)
 }
 
 local lastRegistered = null;
