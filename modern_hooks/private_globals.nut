@@ -1,4 +1,4 @@
-::Hooks.getNameForQueueBucket <- function( _queueBucketID )
+::Hooks.__getNameForQueueBucket <- function( _queueBucketID )
 {
 	foreach (key, val in ::Hooks.QueueBucket)
 	{
@@ -6,7 +6,6 @@
 			return key;
 	}
 }
-
 
 ::Hooks.__validateModCompatibility <- function()
 {
@@ -108,7 +107,7 @@
 		if (!(bucketType in buckets))
 			continue;
 		local funcs = this.__sortQueue(buckets[bucketType]);
-		::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.getNameForQueueBucket(bucketType)));
+		::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(bucketType)));
 		this.__executeQueuedFunctions(funcs);
 	}
 }
