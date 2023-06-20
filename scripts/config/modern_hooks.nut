@@ -26,23 +26,6 @@
 	DebugMode = true,
 	__SemVerRegex = regexp("^((?:(?:0|[1-9]\\d*)\\.){2}(?:0|[1-9]\\d*))(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"),
 	__VersionOperatorRegex = regexp("^((?:!|=|<|>)?=?)"),
-	function register( _modID, _version, _modName, _metaData = null )
-	{
-		if (_metaData == null)
-			_metaData = {};
-		if (_modID in this.Mods)
-		{
-			this.__errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
-		}
-		this.Mods[_modID] <- ::Hooks.Mod(_modID, _version, _modName, _metaData);
-		this.__inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
-		return this.Mods[_modID];
-	}
-
-	function getMods()
-	{
-		return this.Mods;
-	}
 
 	function __validateModCompatibility()
 	{
@@ -149,98 +132,6 @@
 		}
 	}
 
-	function hasMod( _modID )
-	{
-		return _modID in this.Mods;
-	}
-
-	function getMod( _modID )
-	{
-		return this.Mods[_modID];
-	}
-
-	function rawHook( _modID, _src, _rawHook ) // _modID gets ignored for now ig
-	{
-		if (!::Hooks.hasMod(_modID))
-		{
-			::Hooks.__error("To hook using modern hooks, you must first register your mod with ::Hooks.register");
-			return;
-		}
-		this.__initClass(_src);
-		this.Classes[_src].RawHooks.Hooks.push(_rawHook);
-	}
-
-	function rawLeafHook( _modID, _src, _rawLeafHook ) // _modID gets ignored for now ig
-	{
-		if (!::Hooks.hasMod(_modID))
-		{
-			::Hooks.__error("To hook using modern hooks, you must first register your mod with ::Hooks.register");
-			return;
-		}
-		this.__initClass(_src);
-		this.Classes[_src].LeafHooks.Hooks.push(_rawLeafHook);
-	}
-
-	function registerJS( _filePath )
-	{
-		if (typeof _filePath != "string" || _filePath.slice(0,3) != "ui/")
-		{
-			this.__error("registerJS requires a file path starting with ui/");
-			return;
-		}
-		this.JSFiles.push(_filePath);
-	}
-
-	function registerCSS( _filePath )
-	{
-		if (typeof _filePath != "string" || _filePath.slice(0,3) != "ui/")
-		{
-			this.__error("registerCSS requires a file path starting with ui/");
-			return;
-		}
-		this.CSSFiles.push(_filePath);
-	}
-
-	function addNewFunctions( _modID, _src, _newFunctions )
-	{
-		this.rawHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
-	}
-
-	function addNewLeafFunctions( _modID, _src, _newFunctions )
-	{
-		this.rawLeafHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
-	}
-
-	function wrapFunctions( _modID, _src, _funcWrappers )
-	{
-		this.rawHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
-	}
-
-	function wrapLeafFunctions( _modID, _src, _funcWrappers )
-	{
-		this.rawLeafHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
-	}
-
-	function addFields( _modID, _src, _fieldsToAdd )
-	{
-		this.rawHook(_modID, _src, this.__getAddFieldsHook(_modID, _src, _fieldsToAdd));
-	}
-
-	function addLeafFields( _modID, _src, _fieldsToAdd )
-	{
-		this.rawLeafHook(_modID, _src, this.__getAddFieldsHook(_modID, _src, _fieldsToSet));
-	}
-
-	function setFields( _modID, _src, _fieldsToSet )
-	{
-		this.rawHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
-	}
-
-	function setLeafFields( _modID, _src, _fieldsToSet )
-	{
-		this.rawLeafHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
-	}
-
 	function __processClass( _src, _prototype )
 	{
 		if (this.DebugMode)
@@ -280,8 +171,6 @@
 
 	function __registerForAncestorLeafHooks( _prototype, _src )
 	{
-		if (!("SuperName" in _prototype))
-			return;
 		local src = _src;
 		local p = _prototype;
 		do
