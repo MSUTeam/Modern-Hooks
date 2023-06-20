@@ -75,7 +75,7 @@
 
 ::Hooks.__executeQueuedFunctions <- function( _queuedFunctions )
 {
-	foreach (queued::Hooks.in <- function _queuedFunctions)
+	foreach (queuedFunction in _queuedFunctions)
 	{
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
