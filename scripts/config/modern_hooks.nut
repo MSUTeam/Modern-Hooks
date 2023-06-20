@@ -26,7 +26,7 @@
 	CSSFiles = [],
 	RootState = null,
 	MainMenuState = null,
-	DebugMode = true,
+	DebugMode = false,
 	__SemVerRegex = regexp("^((?:(?:0|[1-9]\\d*)\\.){2}(?:0|[1-9]\\d*))(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"),
 	__VersionOperatorRegex = regexp("^((?:!|=|<|>)?=?)")
 }
