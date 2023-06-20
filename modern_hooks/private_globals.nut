@@ -120,10 +120,10 @@
 			this.__initClass(_src);
 		this.Classes[_src].Prototype <- _prototype;
 	}
+	this.__registerForAncestorLeafHooks(_prototype, _src); // needs adjsutment, relies on debugmode rn
 	if (!(_src in this.Classes)) // this
 		return;
 	this.__processHooks(_prototype, this.Classes[_src].RawHooks.Hooks);
-	this.__registerForAncestorLeafHooks(_prototype, _src); // needs adjsutment, relies on debugmode rn
 	this.Classes[_src].Processed = true;
 }
 
