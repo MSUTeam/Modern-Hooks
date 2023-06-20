@@ -7,15 +7,6 @@
 	Last = 50
 };
 
-::Hooks.getNameForQueueBucket <- function( _queueBucketID )
-{
-	foreach (key, val in ::Hooks.QueueBucket)
-	{
-		if (_queueBucketID == val)
-			return key;
-	}
-}
-
 ::Hooks.QueuedFunction <- class
 {
 	LoadBefore = null;
