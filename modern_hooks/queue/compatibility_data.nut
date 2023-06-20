@@ -13,29 +13,6 @@ local function msu_SemVer_isSemVer( _string )
 	return ::Hooks.__SemVerRegex.capture(_string) != null;
 }
 
-::Hooks.Operator <- {
-	LT = 1, // <
-	LE = 2, // <=
-	EQ = 3, // ==
-	NE = 4 // !=
-	GE = 5 // >=
-	GT = 6, // >
-} // non MSU ghetto enum
-
-::Hooks.CompatibilityCheckResult <- {
-	Success = 0,
-	TooSmall = 1,
-	TooBig = 2,
-	Incorrect = 3,
-	ModMissing = 4,
-	ModPresent = 5
-}
-
-::Hooks.CompatibilityType <- {
-	Requirement = 1,
-	Incompatibility = 2
-}
-
 ::Hooks.CompatibilityData <- class
 {
 	ModID = null;

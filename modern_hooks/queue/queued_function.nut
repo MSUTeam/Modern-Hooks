@@ -1,12 +1,3 @@
-::Hooks.QueueBucket <- {
-	First = 0,
-	Early = 10,
-	Normal = 20,
-	Late = 30,
-	VeryLate = 40,
-	Last = 50
-};
-
 ::Hooks.QueuedFunction <- class
 {
 	LoadBefore = null;
