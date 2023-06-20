@@ -1,6 +1,6 @@
 if (!("mods_hookExactClass" in this.getroottable()))
 	return;
-
+::Hooks.__inform("=================Patching Modding Script Hooks=================")
 ::mods_hookExactClass = function( name, func )
 {
 	::Hooks.rawHook("mod_hooks", "scripts/" + name, func)
