@@ -44,16 +44,6 @@
 		return this.Mods;
 	}
 
-	function isModRegistered( _modID )
-	{
-		return _modID in this.Mods;
-	}
-
-	function getRegisteredMod( _modID )
-	{
-		return this.Mods[_modID];
-	}
-
 	function __validateModCompatibility()
 	{
 		local compatErrors = [];
@@ -82,19 +72,19 @@
 					this.__error(format("%s (%s) requires %s (%s)", error.Source.getID(), error.Source.getName(), error.Target.getModID(), name));
 					break;
 				case ::Hooks.CompatibilityCheckResult.ModPresent:
-					local mod = ::Hooks.getRegisteredMod(error.Target.getModID());
+					local mod = ::Hooks.getMod(error.Target.getModID());
 					this.__error(format("%s (%s) is incompatible with %s (%s)", error.Source.getID(), error.Source.getName(), mod.getID(), mod.getName()));
 					break;
 				case ::Hooks.CompatibilityCheckResult.TooSmall:
-					local mod = ::Hooks.getRegisteredMod(error.Target.getModID());
+					local mod = ::Hooks.getMod(error.Target.getModID());
 					this.__error(format("%s (%s) version %s is outdated for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
 					break;
 				case ::Hooks.CompatibilityCheckResult.TooBig:
-					local mod = ::Hooks.getRegisteredMod(error.Target.getModID());
+					local mod = ::Hooks.getMod(error.Target.getModID());
 					this.__error(format("%s (%s) version %s is too new for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
 					break;
 				case ::Hooks.CompatibilityCheckResult.Incorrect:
-					local mod = ::Hooks.getRegisteredMod(error.Target.getModID());
+					local mod = ::Hooks.getMod(error.Target.getModID());
 					this.__error(format("%s (%s) version %s is wrong for %s (%s), which requires (a) version %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
 					break;
 			}
