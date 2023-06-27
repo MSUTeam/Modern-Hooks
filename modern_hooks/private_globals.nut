@@ -226,7 +226,7 @@
 {
 	return function(_prototype)
 	{
-		foreach (fieldName, value in _prototype)
+		foreach (fieldName, value in _fieldsToAdd)
 		{
 			local p = _prototype;
 			do
