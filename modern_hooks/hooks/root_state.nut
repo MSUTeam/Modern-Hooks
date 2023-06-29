@@ -1,4 +1,4 @@
-::Hooks.rawHook("mod_modern_hooks", "scripts/root_state", function(o)
+::Hooks.rawHook(::Hooks.ID, "scripts/root_state", function(o)
 {
 	local onInit = o.onInit;
 	o.onInit = function()
