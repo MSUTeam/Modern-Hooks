@@ -201,14 +201,6 @@
 				break;
 			}
 			while ("SuperName" in p && (p = p[p.SuperName]))
-			if (ancestorCounter > 1 && originalFunction != null) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
-			{
-				local funcNameCache = funcName;
-				originalFunction = function(...) {
-					vargv.insert(0, this);
-					return this[_prototype.SuperName][funcNameCache].acall(vargv);
-				}
-			}
 
 			if (originalFunction == null)
 			{
@@ -217,7 +209,25 @@
 				// should we instead pass a `@(...)null`? this would allow mods to use this with each others functions, but they'd have to handle nulls returns... not sure which approach is best
 				continue;
 			}
-			_prototype[funcName] <- funcWrapper(originalFunction);
+			local numParams = originalFunction.getinfos().parameters.len();
+
+			if (ancestorCounter > 1) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
+			{
+				local funcNameCache = funcName;
+				originalFunction = function(...) {
+					vargv.insert(0, this);
+					return this[_prototype.SuperName][funcNameCache].acall(vargv);
+				}
+			}
+
+			local newFunc = funcWrapper(originalFunction);
+			local newNumParams = newFunc.getinfos().parameters.len();
+			if (newNumParams != numParams)
+			{
+				local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
+				this.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, numParams, newNumParams))
+			}
+			_prototype[funcName] <- newFunc;
 		}
 	}
 }
