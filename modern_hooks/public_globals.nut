@@ -70,40 +70,88 @@
 
 ::Hooks.addNewFunctions <- function( _modID, _src, _newFunctions )
 {
+	local error = this.__validateNewFunctions(_newFunctions);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _newFunctions table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#adding-functions\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
 }
 
 ::Hooks.addNewLeafFunctions <- function( _modID, _src, _newFunctions )
 {
+	local error = this.__validateNewFunctions(_newFunctions);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _newFunctions table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#adding-functions\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawLeafHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
 }
 
 ::Hooks.wrapFunctions <- function( _modID, _src, _funcWrappers )
 {
+	local error = this.__validateWrapFunctions(_funcWrappers);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 }
 
 ::Hooks.wrapLeafFunctions <- function( _modID, _src, _funcWrappers )
 {
+	local error = this.__validateWrapFunctions(_funcWrappers);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawLeafHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 }
 
 ::Hooks.addFields <- function( _modID, _src, _fieldsToAdd )
 {
+	local error = this.__validateFields(_fieldsToAdd);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _fieldsToAdd table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#adding-fields\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawHook(_modID, _src, this.__getAddFieldsHook(_modID, _src, _fieldsToAdd));
 }
 
 ::Hooks.addLeafFields <- function( _modID, _src, _fieldsToAdd )
 {
+	local error = this.__validateFields(_fieldsToAdd);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _fieldsToAdd table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#adding-fields\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawLeafHook(_modID, _src, this.__getAddFieldsHook(_modID, _src, _fieldsToSet));
 }
 
 ::Hooks.setFields <- function( _modID, _src, _fieldsToSet )
 {
+	local error = this.__validateFields(_fieldsToSet);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _fieldsToSet table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#setting-fields\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
 }
 
 ::Hooks.setLeafFields <- function( _modID, _src, _fieldsToSet )
 {
+	local error = this.__validateFields(_fieldsToSet);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _fieldsToSet table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#setting-fields\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
 	this.rawLeafHook(_modID, _src, this.__getSetFieldsHook(_modID, _src, _fieldsToSet));
 }

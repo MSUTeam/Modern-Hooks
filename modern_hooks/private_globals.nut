@@ -310,6 +310,54 @@
 	}
 }
 
+::Hooks.__validateFields <- function( _fields )
+{
+	if (typeof _fields != "table")
+		return "not table";
+	foreach (key, value in _fields)
+	{
+		if (typeof key != "string")
+			return key + " is not a string, and all field names have to be strings";
+	}
+	return null;
+}
+
+::Hooks.__validateNewFunctions <- function( _newFunctions )
+{
+	if (typeof _newFunctions != "table")
+		return "not table";
+	foreach (key, func in _newFunctions)
+	{
+		if (typeof key != "string")
+			return key + " is not a string, and all function names have to be strings";
+		if (typeof func != "function")
+			return "the value for key " + key + " is not a function";
+	}
+	return null;
+}
+
+::Hooks.__validateWrapFunctions <- function( _funcWrappers )
+{
+	if (typeof _funcWrappers != "table")
+		return "not table";
+	foreach (key, funcWrapper in _funcWrappers)
+	{
+		if (typeof key != "string")
+			return key + " is not a string, and all function names have to be strings";
+		if (typeof funcWrapper != "function")
+			return "the value for key " + key + " is not a function";
+		local infos = funcWrapper.getinfos();
+		if (infos.parameters.len() != 2) // it's two here because 1 is the current scope (this)
+			return "the function wrapper for " + key + " doesn't have 1 parameter (which it must)";
+		// I'm split on enforcing this but I think it's for the best
+		if (infos.parameters[1] != "_originalFunction")
+			return "the single parameter for function wrapper " + key + " isn't called _originalFunction";
+		if (typeof funcWrapper(@()null) != "function")
+			return "the function wrapper " +  key + " isn't returning a function"
+	}
+	return null;
+}
+
 ::Hooks.__errorAndThrow <- function( _text )
 {
 	if ("MSU" in this.getroottable())
