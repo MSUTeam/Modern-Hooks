@@ -112,6 +112,28 @@
 	this.rawLeafHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 }
 
+::Hooks.wrapEntityFunctions <- function( _modID, _src, _funcWrappers )
+{
+	local error = this.__validateWrapFunctions(_funcWrappers);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
+	this.rawHook(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
+}
+
+::Hooks.wrapLeafEntityFunctions <- function( _modID, _src, _funcWrappers )
+{
+	local error = this.__validateWrapFunctions(_funcWrappers);
+	if (error != null)
+	{
+		this.__error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
+		return;
+	}
+	this.rawLeafHook(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
+}
+
 ::Hooks.addFields <- function( _modID, _src, _fieldsToAdd )
 {
 	local error = this.__validateFields(_fieldsToAdd);

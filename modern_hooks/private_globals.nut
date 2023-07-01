@@ -186,6 +186,19 @@
 	};
 }
 
+::Hooks.__getNativeFunctionWrapper <- function( _modID, _src, _funcWrappers )
+{
+	return this.__getFunctionWrappersHook(_modID, _src, {
+		function onInit( _originalFunction )
+		{
+			return function() {
+				::Hooks.__getFunctionWrappersHook(_modID, _src, _funcWrappers)(this);
+				_originalFunction();
+			};
+		}
+	});
+}
+
 ::Hooks.__getFunctionWrappersHook <- function( _modID, _src, _funcWrappers)
 {
 	return function(_prototype)
