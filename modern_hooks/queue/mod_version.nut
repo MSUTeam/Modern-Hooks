@@ -1,8 +1,3 @@
-local function msu_regexMatch( _capture, _string, _group )
-{
-	return _capture[_group].end > 0 && _capture[_group].begin < _string.len() ? _string.slice(_capture[_group].begin, _capture[_group].end) : null;
-}
-
 local function msu_String_isInteger( _string )
 {
 	foreach (char in _string)
@@ -33,14 +28,14 @@ local function msu_String_isInteger( _string )
 			::Hooks.__error(format("Given version '%s' is not formatted according to Semantic Versioning guidelines (see https://semver.org/)", _semverString));
 			throw "SemVer error";
 		}
-		local version = split(msu_regexMatch(capture, _semverString, 1), ".").map(@(_v) _v.tointeger());
+		local version = split(::Hooks.__msu_regexMatch(capture, _semverString, 1), ".").map(@(_v) _v.tointeger());
 		this.MAJOR = version[0];
 		this.MINOR = version[1];
 		this.PATCH = version[2];
-		local prerelease = msu_regexMatch(capture, _semverString, 2);
+		local prerelease = ::Hooks.__msu_regexMatch(capture, _semverString, 2);
 		if (prerelease != null)
 			this.PreRelease = split(prerelease, ".")
-		local metadata = msu_regexMatch(capture, _semverString, 3);
+		local metadata = ::Hooks.__msu_regexMatch(capture, _semverString, 3);
 		if (metadata != null)
 			this.MetaData = split(metadata, ".");
 	}

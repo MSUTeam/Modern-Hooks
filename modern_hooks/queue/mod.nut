@@ -4,11 +4,6 @@ local function msu_SemVer_isSemVer( _string )
 	return ::Hooks.__SemVerRegex.capture(_string) != null;
 }
 
-local function msu_regexMatch( _capture, _string, _group )
-{
-	return _capture[_group].end > 0 && _capture[_group].begin < _string.len() ? _string.slice(_capture[_group].begin, _capture[_group].end) : null;
-}
-
 ::Hooks.Mod <- class
 {
 	ID = null;
@@ -81,7 +76,7 @@ local function msu_regexMatch( _capture, _string, _group )
 			local capture = ::Hooks.__VersionOperatorRegex.capture(version);
 			if (capture == null)
 				::Hooks.__errorAndThrow(format("Mod version information needs to be prefixed with =/==/!/!=/</<=/>/>=, for example \">=1.0.0\" or \"!1.12421\" (for non SemVer mods), currently : \"%s\"", version));
-			operator = msu_regexMatch(capture, version, 0);
+			operator = ::Hooks.__msu_regexMatch(capture, version, 0);
 			if (operator == null)
 				operator = "";
 			version = version.slice(operator.len());
