@@ -210,11 +210,12 @@
 			if (originalFunction == null)
 			{
 				local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
-				this.__warn(format("Mod %s failed to wrap function %s in bb class %s: there is no ::Hooks.to <- function wrap in the class or any of its ancestors", _modID,  funcName, src));
+				::Hooks.__warn(format("Mod %s failed to wrap function %s in bb class %s: there is no function to wrap in the class or any of its ancestors", _modID,  funcName, src));
 				// should we instead pass a `@(...)null`? this would allow mods to use this with each others functions, but they'd have to handle nulls returns... not sure which approach is best
 				continue;
 			}
-			local numParams = originalFunction.getinfos().parameters.len();
+			// leaving this out for now because it is painful to handle native functions as well
+			local oldInfos = originalFunction.getinfos();
 
 			if (ancestorCounter > 1) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
 			{
@@ -226,11 +227,60 @@
 			}
 
 			local newFunc = funcWrapper(originalFunction);
-			local newNumParams = newFunc.getinfos().parameters.len();
-			if (newNumParams != numParams)
+			local newInfos = newFunc.getinfos();
+			local newParams = newInfos.parameters;
+			local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
+
+			if (newParams[newParams.len()-1] == "...")
 			{
-				local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
-				this.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, numParams, newNumParams))
+				// new function uses vargv, do not perform validation
+			}
+			else if (oldInfos.native == false) // squirrel function
+			{
+				local oldParams = oldInfos.parameters;
+				if (oldParams.len() != newParams.len() && oldParams[oldParams.len()-1] != "...")
+				{
+					::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldParams.len()-1, newParams.len()-1))
+				}
+			}
+			else if (oldInfos.paramscheck != 0) // native function with normal param handling
+			{
+				if (oldInfos.paramscheck != newParams.len())
+				{
+					::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldInfos.paramscheck-1, newParams.len()-1))
+				}
+			}
+			else if (funcName.find("__sqrat_ol_") != 0) // native function with operator overloading
+			{
+				local acceptableParamCounts = [];
+				local overloadedFuncName = "__sqrat_ol_ " + funcName;
+				local slicePos = overloadedFuncName.len() + 1;
+				foreach (key, value in p)
+				{
+					if (key.find(overloadedFuncName) != 0)
+						continue;
+					acceptableParamCounts.push(key.slice(slicePos).tointeger()); // this should probably get validated
+				}
+				if (acceptableParamCounts.len() == 0)
+					::Hooks.__error(format("Something went wrong when validating native overloaded param counts for bb class %s function %s", src, funcName));
+				else
+				{
+					if (acceptableParamCounts.find(newParams.len()-1) == null)
+					{
+						::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldInfos.paramscheck, newParams.len()-1))
+					}
+				}
+			}
+			else // one of the created functions for operator overloading
+			{
+				local capture = ::Hooks.__OverloadedFuncNameRegex.capture(funcName);
+				if (capture == null)
+					::Hooks.__errorAndThrow(format("Something went wrong when testing function parameters. funcName: %s, src: %s", funcName, src));
+				local oldParamCount = ::Hooks.__msu_regexMatch(capture, funcName, 1).tointeger();
+				if (oldParamCount != newParams.len() - 1)
+				{
+					::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldParamCount, newParams.len()-1))
+				}
 			}
 			_prototype[funcName] <- newFunc;
 		}
