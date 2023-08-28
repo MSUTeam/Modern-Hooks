@@ -24,6 +24,7 @@
 	Mods = {},
 	JSFiles = [],
 	CSSFiles = [],
+	AfterHooksBucket = null,
 	RootState = null,
 	MainMenuState = null,
 	DebugMode = false,

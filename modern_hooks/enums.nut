@@ -3,8 +3,8 @@
 	Early = 1,
 	Normal = 2,
 	Late = 3,
-	VeryLate = 4,
-	Last = 5
+	Last = 4,
+	AfterHooks = 5
 };
 
 ::Hooks.Operator <- {
