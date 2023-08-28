@@ -1,4 +1,4 @@
-::Hooks.__getNameForQueueBucket <- function( _queueBucketID )
+::Hooks.__getNameForQueueBucket <- function( _queueBucketID ) // not a fan of this function but without MSU enums this is a pain
 {
 	foreach (key, val in ::Hooks.QueueBucket)
 	{
@@ -191,7 +191,7 @@
 			{
 				if (!(key in p))
 					continue;
-				this.__warn(format("%s is adding a new function %s to %s, but that ::Hooks.already <- function exists in %s, which is either the class itself or an ancestor", _modID, key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
+				this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID, key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
 				break;
 			}
 			while ("SuperName" in p && (p = p[p.SuperName]))
@@ -378,6 +378,12 @@
 {
 	if (_eventType == 'r' && _funcName == "main")
 	{
+		// would be great if this block could be improved with something like ::seterrorhandler
+		// but that doesn't seem to do anything in our squirrel build.
+		// The issue right now is that the only information catch receives is the error code,
+		// it doesn't get any information about where that error occured
+		// this means that instead any code executed by hooks needs to use intensive validation
+		// and maybe its own try/catch blocks to make it easier to identify the source of the error
 		try
 		{
 			// fix path

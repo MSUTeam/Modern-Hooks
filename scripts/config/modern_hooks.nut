@@ -36,8 +36,7 @@
 ::include("modern_hooks/enums");
 ::include("modern_hooks/private_globals");
 ::include("modern_hooks/public_globals");
-::Hooks.__inform("=================Initialized Hooks=================");
 foreach (file in ::IO.enumerateFiles("modern_hooks/queue"))
 	::include(file);
-
+::Hooks.__inform("=================Initialized Hooks=================");
 ::setdebughook(::Hooks.__debughook.bindenv(::Hooks));
