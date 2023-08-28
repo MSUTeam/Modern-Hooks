@@ -58,6 +58,16 @@
 	this.JSFiles.push(_filePath);
 }
 
+::Hooks.registerLateJS <- function( _filePath )
+{
+	if (typeof _filePath != "string" || _filePath.slice(0,3) != "ui/")
+	{
+		this.__error("registerJS requires a file path starting with ui/");
+		return;
+	}
+	this.LateJSFiles.push(_filePath);
+}
+
 ::Hooks.registerCSS <- function( _filePath )
 {
 	if (typeof _filePath != "string" || _filePath.slice(0,3) != "ui/")

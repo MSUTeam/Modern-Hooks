@@ -44,6 +44,14 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 			Hooks.registerScreens();
 			engine.call = engineCall;
 			SQ.call(self.mSQHandle, "resumeOnInit", null);
+
+			var lateJsFiles = _data.LateJS;
+			for (var i = 0; i < lateJsFiles.length; i++)
+			{
+				var js = document.createElement("script");
+				js.src = lateJsFiles[i].slice(3);
+				document.body.appendChild(js);
+			}
 		}
 
 		if (jsFiles.length == 0)

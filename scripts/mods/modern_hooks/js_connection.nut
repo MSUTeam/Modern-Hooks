@@ -37,7 +37,8 @@ this.js_connection <- {
 		}
 		return {
 			JS = ::Hooks.JSFiles,
-			CSS = ::Hooks.CSSFiles
+			CSS = ::Hooks.CSSFiles,
+			LateJS = ::Hooks.LateJSFiles
 		}
 	}
 
