@@ -10,7 +10,7 @@ local lastRegistered = null;
 ::mods_registerMod = function( codeName, version, friendlyName = null, extra = null )
 {
 	lastRegistered = codeName;
-	::Hooks.register(codeName, version, friendlyName == null ? codeName : friendlyName, extra);
+	::Hooks.__unverifiedRegister(codeName, version, friendlyName == null ? codeName : friendlyName, extra);
 }
 
 foreach (mod in ::mods_getRegisteredMods())

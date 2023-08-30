@@ -1,14 +1,8 @@
 ::Hooks.register <- function( _modID, _version, _modName, _metaData = null )
 {
-	if (_metaData == null)
-		_metaData = {};
-	if (_modID in this.Mods)
-	{
-		this.__errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
-	}
-	this.Mods[_modID] <- ::Hooks.Mod(_modID, _version, _modName, _metaData);
-	this.__inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
-	return this.Mods[_modID];
+	if (typeof _version != "string")
+		this.__errorAndThrow(format("Modern Hooks requires that mods registering with it have a Semantic Version, see https://semver.org. Mod %s version %s doesn't follow this format", _modID, _version + ""))
+	return this.__unverifiedRegister(_modID, _version, _modName, _metaData);
 }
 
 ::Hooks.getMods <- function()
