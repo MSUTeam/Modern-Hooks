@@ -116,7 +116,7 @@
 	this.rawLeafHook(_modID, _src, this.__getFunctionWrappersHook(_modID, _src, _funcWrappers));
 }
 
-::Hooks.wrapEntityFunctions <- function( _modID, _src, _funcWrappers )
+::Hooks.wrapNativeEntityFunctions <- function( _modID, _src, _funcWrappers )
 {
 	local error = this.__validateWrapFunctions(_funcWrappers);
 	if (error != null)
@@ -127,7 +127,7 @@
 	this.rawHook(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
 }
 
-::Hooks.wrapLeafEntityFunctions <- function( _modID, _src, _funcWrappers )
+::Hooks.wrapLeafNativeEntityFunctions <- function( _modID, _src, _funcWrappers )
 {
 	local error = this.__validateWrapFunctions(_funcWrappers);
 	if (error != null)
