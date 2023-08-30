@@ -254,7 +254,6 @@
 				// should we instead pass a `@(...)null`? this would allow mods to use this with each others functions, but they'd have to handle nulls returns... not sure which approach is best
 				continue;
 			}
-			// leaving this out for now because it is painful to handle native functions as well
 			local oldInfos = originalFunction.getinfos();
 
 			if (ancestorCounter > 1) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
