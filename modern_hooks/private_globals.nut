@@ -215,7 +215,7 @@
 
 ::Hooks.__getNativeFunctionWrapper <- function( _modID, _src, _funcWrappers )
 {
-	return this.__getFunctionWrappersHook(_modID, _src, {
+	local hook = this.__getFunctionWrappersHook(_modID, _src, {
 		function onInit( _originalFunction )
 		{
 			return function() {
@@ -224,6 +224,44 @@
 			};
 		}
 	});
+	return function( _prototype ) {
+		// first verify that target is a tactical or world entity
+		local p = _prototype;
+		local src = _src;
+		local notEntity = true;
+		do
+		{
+			if (src == ::Hooks.__TacticalEntityPath || src == ::Hooks.__WorldEntityPath)
+			{
+				notEntity = false;
+				break;
+			}
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
+		if (notEntity)
+		{
+			// error here because this hook won't work without an onInit function
+			::Hooks.__error(format("%s is using a native function wrapper on class %s which isn't a tactical or world entity", _modID, _src))
+			return;
+		}
+
+		// then make sure the functions we are targetting don't exist in the BB class
+		foreach (key, funcWrapper in _funcWrappers)
+		{
+			p = _prototype;
+			src = _src;
+			do
+			{
+				if (!(key in p))
+					continue;
+				// warn here because I can imagine a situation where some modder adds a function to player in a bad hook that is overwritten by C++
+				::Hooks.__warn(format("%s is using a native function wrapper on function %s in %s, but that function isn't a native function as it is defined in class %s, which is either the class itself or ancestor", _modID, key, _src, src));
+			}
+			while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
+		}
+		// finally actually hook the target
+		hook(_prototype);
+	}
 }
 
 ::Hooks.__getFunctionWrappersHook <- function( _modID, _src, _funcWrappers)
