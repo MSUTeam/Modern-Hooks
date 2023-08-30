@@ -98,7 +98,7 @@ local function inverter(_operator)
 				break;
 			case '>':
 				invert = true;
-				loadOrderData.After.push(expression.modName); // TODO adjust to be as above, currently only this way for testing purposes
+				loadOrderData.After.push({ID = expression.modName});
 				break;
 		}
 		if (expression.version == null)
