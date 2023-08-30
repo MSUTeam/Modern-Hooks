@@ -402,7 +402,7 @@
 			while ("SuperName" in p && (p = p[p.SuperName]))
 			if (fieldTable == null)
 			{
-				this.__warn(format("Mod %s tried to set field %s in bb class %s, but the file doesn't exist in the class or any of its ancestors", _modID, key, _src));
+				this.__warn(format("Mod %s tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", _modID, key, _src));
 				continue;
 			}
 			fieldTable[key] = value;
