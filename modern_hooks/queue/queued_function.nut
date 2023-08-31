@@ -12,7 +12,7 @@
 			_bucket = ::Hooks.QueueBucket.Normal;
 		this.LoadBefore = {};
 		this.LoadAfter = {};
-		this.Mod = _mod;
+		this.Mod = _mod.weakref();
 		this.Function = _function;
 		this.Bucket = _bucket;
 		if (_loadOrderData != null)
@@ -47,11 +47,6 @@
 	function getFunction()
 	{
 		return this.Function;
-	}
-
-	function clear()
-	{
-		this.Mod = null; // circular reference otherwise, technically gets cleaned
 	}
 
 	function getModID()
