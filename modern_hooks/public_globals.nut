@@ -72,7 +72,7 @@
 	this.CSSFiles.push(_filePath);
 }
 
-::Hooks.addNewFunctions <- function( _modID, _src, _newFunctions )
+::Hooks.addFunctions <- function( _modID, _src, _newFunctions )
 {
 	local error = this.__validateNewFunctions(_newFunctions);
 	if (error != null)
@@ -83,7 +83,7 @@
 	this.rawHook(_modID, _src, this.__getAddNewFunctionsHook( _modID, _src, _newFunctions))
 }
 
-::Hooks.addNewLeafFunctions <- function( _modID, _src, _newFunctions )
+::Hooks.addLeafFunctions <- function( _modID, _src, _newFunctions )
 {
 	local error = this.__validateNewFunctions(_newFunctions);
 	if (error != null)
