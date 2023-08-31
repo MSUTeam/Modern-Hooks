@@ -1,6 +1,6 @@
 ::Hooks <- {
 	ID = "mod_modern_hooks",
-	Version = "0.1.0",
+	Version = "0.2.0",
 	Name = "Modern Hooks",
 	Classes = {
 		/*"path/to/file" : {
