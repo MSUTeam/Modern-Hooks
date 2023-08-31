@@ -20,7 +20,7 @@
 	return this.Mods[_modID];
 }
 
-::Hooks.rawHook <- function( _modID, _src, _rawHook ) // _modID gets ignored for now ig
+::Hooks.rawHook <- function( _modID, _src, _rawHook )
 {
 	if (!::Hooks.hasMod(_modID))
 	{
@@ -31,7 +31,7 @@
 	this.Classes[_src].RawHooks.Hooks.push(_rawHook);
 }
 
-::Hooks.rawLeafHook <- function( _modID, _src, _rawLeafHook ) // _modID gets ignored for now ig
+::Hooks.rawLeafHook <- function( _modID, _src, _rawLeafHook )
 {
 	if (!::Hooks.hasMod(_modID))
 	{
