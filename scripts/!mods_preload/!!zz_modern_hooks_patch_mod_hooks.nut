@@ -3,7 +3,7 @@ if (!("mods_hookExactClass" in this.getroottable()))
 ::Hooks.__inform("=================Patching Modding Script Hooks=================")
 ::mods_hookExactClass = function( name, func )
 {
-	::Hooks.getMod("mod_hooks").rawHook("scripts/" + name, func)
+	::Hooks.__rawHook(::Hooks.getMod("mod_hooks"), "scripts/" + name, func);
 }
 
 local lastRegistered = null;
