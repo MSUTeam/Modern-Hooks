@@ -28,6 +28,7 @@
 	CSSFiles = [],
 	LateJSFiles = [],
 	AfterHooksBucket = null,
+	FirstWorldInitBucket = null,
 	RootState = null,
 	MainMenuState = null,
 	DebugMode = false,

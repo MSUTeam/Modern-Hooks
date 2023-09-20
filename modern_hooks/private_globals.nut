@@ -126,18 +126,31 @@
 	foreach (bucketType in ::Hooks.QueueBucket)
 		bucketTypes.push(bucketType);
 	bucketTypes.sort();
-	if (::Hooks.QueueBucket.AfterHooks in buckets) // by definition that bucket is handled later
+	foreach (idx, bucketType in bucketTypes)
+	{
+		if (!(bucketType in buckets))
+			continue;
+		buckets[bucketType] = this.__sortQueue(buckets[bucketType]);
+	}
+
+	// by definition that bucket is handled later
+	if (::Hooks.QueueBucket.AfterHooks in buckets)
 	{
 		::Hooks.AfterHooksBucket = buckets[::Hooks.QueueBucket.AfterHooks];
 		delete buckets[::Hooks.QueueBucket.AfterHooks];
 	}
+	if (::Hooks.QueueBucket.FirstWorldInit in buckets)
+	{
+		::Hooks.FirstWorldInitBucket = buckets[::Hooks.QueueBucket.FirstWorldInit];
+		delete buckets[::Hooks.QueueBucket.FirstWorldInit];
+	}
+
 	foreach (bucketType in bucketTypes)
 	{
 		if (!(bucketType in buckets))
 			continue;
-		local funcs = this.__sortQueue(buckets[bucketType]);
 		::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(bucketType)));
-		this.__executeQueuedFunctions(funcs);
+		this.__executeQueuedFunctions(buckets[bucketType]);
 	}
 }
 
@@ -145,9 +158,8 @@
 {
 	if (::Hooks.AfterHooksBucket == null)
 		return;
-	local funcs = this.__sortQueue(::Hooks.AfterHooksBucket);
 	::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(::Hooks.QueueBucket.AfterHooks)));
-	this.__executeQueuedFunctions(funcs);
+	this.__executeQueuedFunctions(::Hooks.AfterHooksBucket);
 }
 
 ::Hooks.__registerClass <- function( _src, _prototype )

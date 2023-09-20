@@ -6,7 +6,8 @@
 	Late = 4,
 	VeryLate = 5,
 	Last = 6,
-	AfterHooks = 7
+	AfterHooks = 7,
+	FirstWorldInit = 8
 };
 
 ::Hooks.Operator <- {
