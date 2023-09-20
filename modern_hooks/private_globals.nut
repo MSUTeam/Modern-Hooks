@@ -266,7 +266,7 @@ local q_meta = {
 			::Hooks.__errorAndThrow(format("todo error"));
 		local wrapperParams = _value.getinfos().parameters;
 		if (wrapperParams.len() != 2 || wrapperParams[1] != "__original")
-			::Hooks.__errorAndThrow(format("Mod %s (%s) did not create a wrapper function with an '__original' parameter when replacing an existing function '%s' in %s. See documentation for details", q.__Mod.getID(), q.__Mod.getName(), _key, src));
+			::Hooks.__errorAndThrow(format("Mod %s (%s) failed to hook function %s in class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", q.__Mod.getID(), q.__Mod.getName(), _key, src));
 
 		local originalFunction;
 		local ancestorCounter = 0;
