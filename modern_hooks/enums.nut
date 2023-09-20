@@ -1,10 +1,12 @@
 ::Hooks.QueueBucket <- {
 	First = 0,
-	Early = 1,
-	Normal = 2,
-	Late = 3,
-	Last = 4,
-	AfterHooks = 5
+	VeryEarly = 1
+	Early = 2,
+	Normal = 3,
+	Late = 4,
+	VeryLate = 5,
+	Last = 6,
+	AfterHooks = 7
 };
 
 ::Hooks.Operator <- {
