@@ -337,6 +337,8 @@ local q_meta = {
 		local value;
 		local exists = false;
 		local p = q.__Prototype;
+		if ("SuperName" in  p && _key == p.SuperName)
+			::Hooks.__errorAndThrow("modern hooks currently disallows getting the parent prototype from a basic hook")
 		do
 		{
 			if (_key in p)
