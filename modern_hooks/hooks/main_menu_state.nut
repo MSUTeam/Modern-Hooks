@@ -1,7 +1,7 @@
-::Hooks.__Mod.rawHook("scripts/states/main_menu_state", function(o)
+::Hooks.__Mod.hook("scripts/states/main_menu_state", function(q)
 {
-	o.ModernHooks_resumeOnInit <- o.onInit;
-	o.onInit = function()
+	q.ModernHooks_resumeOnInit <- q.onInit;
+	q.onInit = @(__original) function()
 	{
 		::Hooks.MainMenuState = this;
 	}

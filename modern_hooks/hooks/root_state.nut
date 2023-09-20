@@ -1,7 +1,7 @@
-::Hooks.__Mod.rawHook("scripts/root_state", function(o)
+::Hooks.__Mod.hook("scripts/root_state", function(q)
 {
-	local onInit = o.onInit;
-	o.onInit = function()
+	local onInit = q.onInit;
+	q.onInit = @(__original) function()
 	{
 		::Hooks.RootState = this;
 		::Hooks.JSConnection <- ::new("scripts/mods/modern_hooks/js_connection");
@@ -9,7 +9,7 @@
 		this.add("MainMenuState", "scripts/states/main_menu_state");
 	}
 
-	o.ModernHooks_resumeOnInit <- function()
+	q.ModernHooks_resumeOnInit <- function()
 	{
 		local add = this.add;
 		this.add = function(...){};
