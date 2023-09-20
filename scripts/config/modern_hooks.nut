@@ -3,15 +3,16 @@
 	Version = "0.2.0",
 	Name = "Modern Hooks",
 	SQClass = {},
-	Classes = {
-		/*"path/to/file" : {
-			RawHooks = {
-				Hooks = []
+	BBClass = {
+		/* "scripts/..." : {
+			Mods = {
+				mod_modern_hooks = {
+					RawHooks = [],
+					LeafHooks = [],
+					MetaHooks = []
+				}
 			},
-			LeafHooks = {
-				Hooks = [],
-				Descendants = []
-			},
+			Descendants = []
 		}*/
 	},
 	CachedModNames = {
@@ -42,6 +43,7 @@
 ::include("modern_hooks/enums");
 ::include("modern_hooks/private_globals");
 ::include("modern_hooks/public_globals");
+::include("modern_hooks/squirrel_hooks");
 foreach (file in ::IO.enumerateFiles("modern_hooks/queue"))
 	::include(file);
 ::Hooks.__inform("=================Initialized Hooks=================");

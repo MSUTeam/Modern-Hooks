@@ -150,42 +150,31 @@
 	this.__executeQueuedFunctions(funcs);
 }
 
-::Hooks.__processClass <- function( _src, _prototype )
+::Hooks.__registerClass <- function( _src, _prototype )
 {
-	if (this.DebugMode)
-	{
-		if (!(_src in this.Classes))
-			this.__initClass(_src);
-		this.Classes[_src].Prototype <- _prototype;
-	}
+	this.__initClass(_src);
+	this.BBClass[_src].Prototype = _prototype;
 	this.__registerForAncestorLeafHooks(_prototype, _src);
-	if (!(_src in this.Classes))
-		return;
-	this.__processHooks(_prototype, this.Classes[_src].RawHooks.Hooks);
-	this.Classes[_src].Processed = true;
 }
 
-::Hooks.__initClass <- function( _src )
+::Hooks.__initClass <- function( _src, _modID = null )
 {
-	if (_src in this.Classes)
-		return;
-	this.Classes[_src] <- {
-		RawHooks = {
-			Hooks = [], // maybe add some metadata to each hook?
-		},
-		LeafHooks = {
-			Hooks = [],
+	if (!(_src in this.BBClass))
+		this.BBClass[_src] <- {
+			Mods = {},
 			Descendants = [],
-		},
-		Processed = false
-	}
+			Prototype = null,
+			Processed = false
+		};
+	if (_modID != null && !(_modID in this.BBClass[_src].Mods))
+		this.BBClass[_src].Mods[_modID] <- {
+			RawHooks = [],
+			LeafHooks = [],
+			// MetaHooks = [] to do later
+		};
 }
 
-::Hooks.__processHooks <- function( _prototype, _hooks )
-{
-	foreach (hook in _hooks)
-		hook(_prototype);
-}
+
 
 ::Hooks.__registerForAncestorLeafHooks <- function( _prototype, _src )
 {
@@ -193,8 +182,8 @@
 	local p = _prototype;
 	do
 	{
-		if (src in this.Classes && this.Classes[src].LeafHooks.Hooks.len() != 0)
-			this.Classes[src].LeafHooks.Descendants.push(_prototype);
+		if (src in this.BBClass && this.BBClass[src].Mods.len() != 0)
+			this.BBClass[src].Descendants.push(_prototype);
 	}
 	while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
 }
@@ -444,8 +433,8 @@ q.setdelegate(q_meta);
 
 ::Hooks.__rawHook <- function( _mod, _src, _func )
 {
-	this.__initClass(_src);
-	this.Classes[_src].RawHooks.Hooks.push(_func);
+	this.__initClass(_src, _mod.getID());
+	this.BBClass[_src].Mods[_mod.getID()].RawHooks.push(_func);
 }
 
 ::Hooks.__hook <- function( _mod, _src, _func )
@@ -460,8 +449,8 @@ q.setdelegate(q_meta);
 
 ::Hooks.__rawLeafHook <- function( _mod, _src, _func )
 {
-	this.__initClass(_src);
-	this.Classes[_src].LeafHooks.Hooks.push(_func);
+	this.__initClass(_src, _mod.getID());
+	this.BBClass[_src].Mods[_mod.getID()].LeafHooks.push(_func);
 }
 
 ::Hooks.__leafHook <- function( _mod, _src, _func )
@@ -474,17 +463,35 @@ q.setdelegate(q_meta);
 	});
 }
 
-::Hooks.__finalizeLeafHooks <- function()
+::Hooks.__processRawHooks <- function( _src )
 {
-	foreach (src, bbclass in this.Classes)
+	local p = this.BBClass[_src].Prototype;
+	foreach (mod in this.BBClass[_src].Mods)
+		foreach (hook in mod.RawHooks)
+			hook(p);
+	this.BBClass[_src].Processed = true;
+}
+
+::Hooks.__finalizeHooks <- function()
+{
+	foreach (src, bbclass in this.BBClass)
 	{
-		foreach (prototype in bbclass.LeafHooks.Descendants)
-			foreach (hook in bbclass.LeafHooks.Hooks)
-				hook(prototype);
+		// normal hook logic
 		if (!bbclass.Processed)
 		{
-			this.__error(format("%s was never proceessed for hooks", src));
+			if (bbclass.Prototype == null)
+			{
+				this.__error(format("%s was never proceessed for hooks", src));
+				continue;
+			}
+			this.__processRawHooks(src);
 		}
+
+		// leaf hook logic
+		foreach (prototype in bbclass.Descendants)
+			foreach (mod in bbclass.Mods)
+				foreach (hook in mod.LeafHooks)
+					hook(prototype)
 	}
 }
 
@@ -513,7 +520,7 @@ q.setdelegate(q_meta);
 				return;
 
 			// actually run hooks
-			this.__processClass(_src, fileScope[className]);
+			this.__registerClass(_src, fileScope[className]);
 		}
 		catch (error)
 		{
