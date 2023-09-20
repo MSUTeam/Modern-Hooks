@@ -7,7 +7,7 @@ local function msu_String_isInteger( _string )
 	return true;
 }
 
-::Hooks.ModVersion <- class
+::Hooks.SQClass.ModVersion <- class
 {
 	MAJOR = null;
 	MINOR = null;
@@ -64,7 +64,7 @@ local function msu_String_isInteger( _string )
 
 	function _cmp( _other )
 	{
-		if (!(_other instanceof ::Hooks.ModVersion))
+		if (!(_other instanceof ::Hooks.SQClass.ModVersion))
 		{
 			::Hooks._error("Trying to compare semver version to something that isn't one");
 			throw "SemVer error";

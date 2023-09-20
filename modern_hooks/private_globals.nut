@@ -12,6 +12,12 @@
 	return _capture[_group].end > 0 && _capture[_group].begin < _string.len() ? _string.slice(_capture[_group].begin, _capture[_group].end) : null;
 }
 
+::Hooks.__msu_SemVer_isSemVer <- function( _string )
+{
+	if (typeof _string != "string") return false;
+	return ::Hooks.__SemVerRegex.capture(_string) != null;
+}
+
 ::Hooks.__validateModCompatibility <- function()
 {
 	local compatErrors = [];
@@ -69,7 +75,7 @@
 	{
 		this.__errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
 	}
-	this.Mods[_modID] <- ::Hooks.Mod(_modID, _version, _modName, _metaData);
+	this.Mods[_modID] <- ::Hooks.SQClass.Mod(_modID, _version, _modName, _metaData);
 	this.__inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
 	return this.Mods[_modID];
 }
@@ -79,10 +85,10 @@
 	local graph = ::Hooks.QueueGraph();
 	foreach (func in _queuedFunctions)
 	{
-		foreach (before, table in func.getLoadBefore())
-			graph.addEdge(before + "_end", func);
-		foreach (after, table in func.getLoadAfter())
-			graph.addEdge(func, after + "_start");
+		foreach (modID in func.getLoadBefore())
+			graph.addEdge(modID + "_end", func);
+		foreach (modID in func.getLoadAfter())
+			graph.addEdge(func, modID + "_start");
 		graph.addEdge(func.getModID() + "_start", func)
 		graph.addEdge(func, func.getModID() + "_end")
 	};
@@ -193,26 +199,6 @@
 	while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
 }
 
-::Hooks.__getAddNewFunctionsHook <- function( _modID, _src, _newFunctions )
-{
-	return function(_prototype)
-	{
-		foreach (key, func in _newFunctions)
-		{
-			local p = _prototype;
-			do
-			{
-				if (!(key in p))
-					continue;
-				this.__warn(format("%s is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", _modID, key, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
-				break;
-			}
-			while ("SuperName" in p && (p = p[p.SuperName]))
-			_prototype[key] <- func;
-		}
-	};
-}
-
 ::Hooks.__getNativeFunctionWrapper <- function( _modID, _src, _funcWrappers )
 {
 	local hook = this.__getFunctionWrappersHook(_modID, _src, {
@@ -264,150 +250,228 @@
 	}
 }
 
-::Hooks.__getFunctionWrappersHook <- function( _modID, _src, _funcWrappers)
-{
-	return function(_prototype)
+local q;
+q = {
+	__Src = null,
+	__Prototype = null
+	__Mod = null
+	m = {}
+}
+local q_meta = {
+	function _set( _key, _value )
 	{
-		foreach (funcName, funcWrapper in _funcWrappers)
-		{
-			local originalFunction = null;
-			local ancestorCounter = 0;
-			local p = _prototype;
-			do
-			{
-				if (!(funcName in p))
-				{
-					++ancestorCounter;
-					continue;
-				}
-				originalFunction = p[funcName];
-				break;
-			}
-			while ("SuperName" in p && (p = p[p.SuperName]))
+		local src = "ClassNameHash" in q.__Prototype ? ::IO.scriptFilenameByHash(q.__Prototype.ClassNameHash) : q.__Src;
+		if (typeof _value != "function")
+			::Hooks.__errorAndThrow(format("todo error"));
+		local wrapperParams = _value.getinfos().parameters;
+		if (wrapperParams.len() != 2 || wrapperParams[1] != "__original")
+			::Hooks.__errorAndThrow(format("Mod %s (%s) did not create a wrapper function with an '__original' parameter when replacing an existing function '%s' in %s. See documentation for details", q.__Mod.getID(), q.__Mod.getName(), _key, src));
 
-			if (originalFunction == null)
+		local originalFunction;
+		local ancestorCounter = 0;
+		local p = q.__Prototype;
+		do
+		{
+			if (!(_key in p))
 			{
-				local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
-				::Hooks.__warn(format("Mod %s failed to wrap function %s in bb class %s: there is no function to wrap in the class or any of its ancestors", _modID,  funcName, src));
-				// should we instead pass a `@(...)null`? this would allow mods to use this with each others functions, but they'd have to handle nulls returns... not sure which approach is best
+				++ancestorCounter;
 				continue;
 			}
-			local oldInfos = originalFunction.getinfos();
-
-			if (ancestorCounter > 1) // patch to fix weirdness with grandparent or greater level inheritance described here https://discord.com/channels/965324395851694140/1052648104815513670
-			{
-				local funcNameCache = funcName;
-				originalFunction = function(...) {
-					vargv.insert(0, this);
-					return this[_prototype.SuperName][funcNameCache].acall(vargv);
-				}
-			}
-
-			local newFunc = funcWrapper(originalFunction);
-			local newInfos = newFunc.getinfos();
-			local newParams = newInfos.parameters;
-			local src = "ClassNameHash" in _prototype ? ::IO.scriptFilenameByHash(_prototype.ClassNameHash) : _src;
-
-			if (newParams[newParams.len()-1] == "...")
-			{
-				// new function uses vargv, do not perform validation
-			}
-			else if (oldInfos.native == false) // squirrel function
-			{
-				local oldParams = oldInfos.parameters;
-				if (oldParams.len() != newParams.len() && oldParams[oldParams.len()-1] != "...")
-				{
-					::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldParams.len()-1, newParams.len()-1))
-				}
-			}
-			else if (oldInfos.paramscheck != 0) // native function with normal param handling
-			{
-				if (oldInfos.paramscheck != newParams.len())
-				{
-					::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldInfos.paramscheck-1, newParams.len()-1))
-				}
-			}
-			else if (funcName.find("__sqrat_ol_") != 0) // native function with operator overloading
-			{
-				local acceptableParamCounts = [];
-				local overloadedFuncName = "__sqrat_ol_ " + funcName;
-				local slicePos = overloadedFuncName.len() + 1;
-				foreach (key, value in p)
-				{
-					if (key.find(overloadedFuncName) != 0)
-						continue;
-					acceptableParamCounts.push(key.slice(slicePos).tointeger()); // this should probably get validated
-				}
-				if (acceptableParamCounts.len() == 0)
-					::Hooks.__error(format("Something went wrong when validating native overloaded param counts for bb class %s function %s", src, funcName));
-				else
-				{
-					if (acceptableParamCounts.find(newParams.len()-1) == null)
-					{
-						::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldInfos.paramscheck, newParams.len()-1))
-					}
-				}
-			}
-			else // one of the created functions for operator overloading
-			{
-				local capture = ::Hooks.__OverloadedFuncNameRegex.capture(funcName);
-				if (capture == null)
-					::Hooks.__errorAndThrow(format("Something went wrong when testing function parameters. funcName: %s, src: %s", funcName, src));
-				local oldParamCount = ::Hooks.__msu_regexMatch(capture, funcName, 1).tointeger();
-				if (oldParamCount != newParams.len() - 1)
-				{
-					::Hooks.__warn(format("Mod %s is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", _modID, funcName, src, oldParamCount, newParams.len()-1))
-				}
-			}
-			_prototype[funcName] <- newFunc;
+			originalFunction = p[_key];
+			break;
 		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+
+		if (originalFunction == null)
+		{
+			::Hooks.__error(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(),  _key, src));
+			return;
+		}
+		local oldInfos = originalFunction.getinfos();
+		local oldParams = oldInfos.parameters;
+		if (ancestorCounter > 1)
+		{
+			originalFunction = function(...) {
+				vargv.insert(0, this);
+				return this[q.__Prototype.SuperName][_key].acall(vargv);
+			}
+		}
+		local newFunc
+		try
+		{
+			newFunc = _value(originalFunction);
+		}
+		catch (error)
+		{
+			::Hooks.__errorAndThrow(format("The overwrite attempt by mod %s (%s) for function %s in class %s failed because of error: %s", q.__Mod.getID(), q.__Mod.getName(), _key, src, error));
+		}
+
+		local newParams = newFunc.getinfos().parameters;
+		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] != "...")
+		{
+			// one of the functions uses vargv, do not perform validation
+		}
+		else if (oldInfos.native == false)
+		{
+			if (oldParams.len() != newParams.len())
+			{
+				::Hooks.__warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", q.__Mod.getID(), q.__Mod.getName(), _key, src, oldParams.len()-1, newParams.len()-1))
+			}
+		}
+		else
+		{
+			::Hookw.__errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", q.__Mod.getID(), q.__Mod.getName(), _key, src))
+		}
+
+		q.__Prototype[_key] <- newFunc;
+	}
+
+	function _newslot( _key, _value )
+	{
+		local p = q.__Prototype;
+		do
+		{
+			if (!(_key in p))
+				continue;
+			::Hooks.__warn(format("Mod %s (%s) is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		q.__Prototype[_key] <- _value;
+	}
+
+	function _get( _key )
+	{
+		// this needs special handling for ancestors (p = p[p.SuperName]) added
+		// right now this will return the ancestor prototype directly
+		// rather than a q wrapper for the prototype
+		local value;
+		local exists = false;
+		local p = q.__Prototype;
+		do
+		{
+			if (_key in p)
+			{
+				value = p[_key];
+				exists = true;
+				break;
+			}
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+
+		if (exists)
+			return value;
+		throw null;
+	}
+
+	function _nexti()
+	{
+
+	}
+
+	function _delslot()
+	{
+
+	}
+};
+local m_meta = {
+	function _set( _key, _value )
+	{
+		local fieldTable = null;
+		local p = q.__Prototype;
+		do
+		{
+			if (!(_key in p.m))
+				continue;
+			fieldTable = p.m;
+			::logInfo("test");
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		if (fieldTable == null)
+		{
+			::Hooks.__warn(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
+		}
+		fieldTable[_key] = _value;
+	}
+
+	function _newslot( _key, _value )
+	{
+		local p = q.__Prototype;
+		do
+		{
+			if (!(_key in p.m))
+				continue;
+			::Hooks.__warn(format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), fieldName, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		q.__Prototype.m[_key] <- _value;
+	}
+
+	function _get( _key )
+	{
+		local value;
+		local found = false;
+		local p = q.__Prototype;
+		do
+		{
+			if (!(_key in p.m))
+				continue;
+			found = true;
+			value = p.m[_key];
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		if (!found)
+			::Hooks.__errorAndThrow(format("Mod %s (%s) is trying to get field %s for bb class %s, but that field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
+		return value;
+	}
+
+	function _nexti()
+	{
+
+	}
+
+	function _delslot()
+	{
+
 	}
 }
 
-::Hooks.__getAddFieldsHook <- function( _modID, _src, _fieldsToAdd )
+q.m.setdelegate(m_meta);
+q.setdelegate(q_meta);
+
+::Hooks.__rawHook <- function( _mod, _src, _func )
 {
-	return function(_prototype)
-	{
-		foreach (fieldName, value in _fieldsToAdd)
-		{
-			local p = _prototype;
-			do
-			{
-				if (!(fieldName in p.m))
-					continue;
-				this.__warn(format("Mod %s is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", _modID, fieldName, _src, p == _prototype ? _src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
-				break;
-			}
-			while ("SuperName" in p && (p = p[p.SuperName]))
-			_prototype.m[fieldName] <- value;
-		}
-	}
+	this.__initClass(_src);
+	this.Classes[_src].RawHooks.Hooks.push(_func);
 }
 
-::Hooks.__getSetFieldsHook <- function( _modID, _src, _fieldsToSet )
+::Hooks.__hook <- function( _mod, _src, _func )
 {
-	return function(_prototype)
-	{
-		foreach (key, value in _fieldsToSet)
-		{
-			local fieldTable = null;
-			local p = _prototype;
-			do
-			{
-				if (!(key in p.m))
-					continue;
-				fieldTable = p.m;
-				break;
-			}
-			while ("SuperName" in p && (p = p[p.SuperName]))
-			if (fieldTable == null)
-			{
-				this.__warn(format("Mod %s tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", _modID, key, _src));
-				continue;
-			}
-			fieldTable[key] = value;
-		}
-	}
+	::Hooks.__rawHook(_mod, _src, function(p) {
+		q.__Prototype = p;
+		q.__Mod = _mod;
+		q.__Src = _src;
+		_func(q);
+	});
+}
+
+::Hooks.__rawLeafHook <- function( _mod, _src, _func )
+{
+	this.__initClass(_src);
+	this.Classes[_src].LeafHooks.Hooks.push(_func);
+}
+
+::Hooks.__leafHook <- function( _mod, _src, _func )
+{
+	::Hooks.__rawLeafHook(_mod, _src, function(p) {
+		q.__Prototype = p;
+		q.__Mod = _mod;
+		q.__Src = _src;
+		_func(q);
+	});
 }
 
 ::Hooks.__finalizeLeafHooks <- function()
@@ -453,57 +517,9 @@
 		}
 		catch (error)
 		{
-			this.__error(error);
+			this.__error(" src: " + _src + " " + error);
 		}
 	}
-}
-
-::Hooks.__validateFields <- function( _fields )
-{
-	if (typeof _fields != "table")
-		return "not table";
-	foreach (key, value in _fields)
-	{
-		if (typeof key != "string")
-			return key + " is not a string, and all field names have to be strings";
-	}
-	return null;
-}
-
-::Hooks.__validateNewFunctions <- function( _newFunctions )
-{
-	if (typeof _newFunctions != "table")
-		return "not table";
-	foreach (key, func in _newFunctions)
-	{
-		if (typeof key != "string")
-			return key + " is not a string, and all function names have to be strings";
-		if (typeof func != "function")
-			return "the value for key " + key + " is not a function";
-	}
-	return null;
-}
-
-::Hooks.__validateWrapFunctions <- function( _funcWrappers )
-{
-	if (typeof _funcWrappers != "table")
-		return "not table";
-	foreach (key, funcWrapper in _funcWrappers)
-	{
-		if (typeof key != "string")
-			return key + " is not a string, and all function names have to be strings";
-		if (typeof funcWrapper != "function")
-			return "the value for key " + key + " is not a function";
-		local infos = funcWrapper.getinfos();
-		if (infos.parameters.len() != 2) // it's two here because 1 is the current scope (this)
-			return "the function wrapper for " + key + " doesn't have 1 parameter (which it must)";
-		// I'm split on enforcing this but I think it's for the best
-		if (infos.parameters[1] != "_originalFunction")
-			return "the single parameter for function wrapper " + key + " isn't called _originalFunction";
-		if (typeof funcWrapper(@()null) != "function")
-			return "the function wrapper " +  key + " isn't returning a function"
-	}
-	return null;
 }
 
 ::Hooks.__errorAndThrow <- function( _text )

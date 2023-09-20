@@ -10,8 +10,8 @@
 	{
 		if (_bucket == null)
 			_bucket = ::Hooks.QueueBucket.Normal;
-		this.LoadBefore = {};
-		this.LoadAfter = {};
+		this.LoadBefore = [];
+		this.LoadAfter = [];
 		this.Mod = _mod.weakref();
 		this.Function = _function;
 		this.Bucket = _bucket;
@@ -24,24 +24,15 @@
 		this.Function = _function;
 	}
 
-	function __parseDataForLoadTable( _dataArray, _table, _otherTable )
-	{
-		foreach (modInfo in _dataArray)
-		{
-			if (typeof modInfo == "string")
-				modInfo = {ID = modInfo};
-			if (modInfo.ID in _otherTable)
-				delete _otherTable[modInfo.ID];
-			_table[modInfo.ID] <- {}; // can maybe add stuff like version info later?
-		}
-	}
-
 	function setLoadOrderData( _data )
 	{
-		if ("After" in _data)
-			this.__parseDataForLoadTable(_data.After, this.LoadAfter, this.LoadBefore);
-		if ("Before" in _data)
-			this.__parseDataForLoadTable(_data.Before, this.LoadBefore, this.LoadAfter);
+		foreach (string in _data)
+		{
+			if (string[0] == 60)
+				this.LoadBefore.push(string.slice(1));
+			if (string[0] == 62)
+				this.LoadAfter.push(string.slice(1));
+		}
 	}
 
 	function getFunction()

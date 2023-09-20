@@ -7,13 +7,7 @@ local function msu_String_isInteger( _string )
 	return true;
 }
 
-local function msu_SemVer_isSemVer( _string )
-{
-	if (typeof _string != "string") return false;
-	return ::Hooks.__SemVerRegex.capture(_string) != null;
-}
-
-::Hooks.CompatibilityData <- class
+::Hooks.SQClass.CompatibilityData <- class
 {
 	ModID = null;
 	Version = null;
@@ -29,8 +23,8 @@ local function msu_SemVer_isSemVer( _string )
 		this.CompatibilityType = _compatibilityType;
 		if (_version == null)
 			this.Version = _version;
-		else if (msu_SemVer_isSemVer(_version))
-			this.Version = ::Hooks.ModVersion(_version);
+		else if (::Hooks.__msu_SemVer_isSemVer(_version))
+			this.Version = ::Hooks.SQClass.ModVersion(_version);
 		else
 			this.Version = _version.tofloat(); // purely for backwards compatibility with Adam's Hooks
 		this.Operator = _operator;

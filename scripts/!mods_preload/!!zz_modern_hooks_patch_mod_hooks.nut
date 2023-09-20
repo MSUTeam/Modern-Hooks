@@ -3,7 +3,7 @@ if (!("mods_hookExactClass" in this.getroottable()))
 ::Hooks.__inform("=================Patching Modding Script Hooks=================")
 ::mods_hookExactClass = function( name, func )
 {
-	::Hooks.rawHook("mod_hooks", "scripts/" + name, func)
+	::Hooks.getMod("mod_hooks").rawHook("scripts/" + name, func)
 }
 
 local lastRegistered = null;
@@ -66,16 +66,12 @@ local function inverter(_operator)
 		expr[i] = { op = m[1].end != 0 ? e[0] : null, modName = match(e, m, 2), verOp = match(e, m, 3), version = match(e, m, 4) };
 	}
 
-
 	local mod = ::Hooks.getMod(codeName);
 	local compatibilityData = {
-		Requirements = {},
-		Incompatibilities = {}
+		Require = [mod],
+		ConflictWith = [mod]
 	};
-	local loadOrderData = {
-		After = [],
-		Before = []
-	}
+	local loadOrderData = [mod];
 	// now convert into modern_hooks
 	foreach (expression in expr)
 	{
@@ -85,37 +81,40 @@ local function inverter(_operator)
 		{
 			case null:
 				requirement = true;
-				compatibilityData.Requirements[expression.modName] <- {};
-				loadOrderData.After.push({ID = expression.modName});
+				compatibilityData.Require.push(expression.modName);
+				loadOrderData.push(">" + expression.modName);
 				break;
 			case '!':
 				requirement = false;
-				compatibilityData.Incompatibilities[expression.modName] <- {};
+				compatibilityData.ConflictWith.push(expression.modName);
 				break;
 			case '<':
 				invert = true;
-				loadOrderData.Before.push({ID = expression.modName});
+				loadOrderData.push("<" + expression.modName);
 				break;
 			case '>':
 				invert = true;
-				loadOrderData.After.push({ID = expression.modName});
+				loadOrderData.push(">" + expression.modName);
 				break;
 		}
 		if (expression.version == null)
 			continue;
 		if (invert)
 		{
-			compatibilityData.Incompatibilities[expression.modName] <- {}
+			compatibilityData.ConflictWith.push(expression.modName);
 			requirement = false;
 			expression.verOp = inverter(expression.verOp)
 		}
-		local currentMod = compatibilityData[requirement ? "Requirements" : "Incompatibilities"][expression.modName];
+		local currentArray = compatibilityData[requirement ? "Require" : "ConflictWith"];
+		local currentMod = currentArray[currentArray.len()-1];
 		if (expression.verOp == null)
 			expression.verOp = "=";
-		currentMod.Version <- expression.verOp + expression.version;
+		currentMod += " " + expression.verOp + " " + expression.version;
 	}
-	mod.declareCompatibilityData(compatibilityData);
-	mod.queueFunction(loadOrderData, func);
+	mod.requires.acall(compatibilityData.Require);
+	mod.conflictsWith.acall(compatibilityData.ConflictWith);
+	loadOrderData.push(func);
+	mod.queue.acall(loadOrderData);
 }
 
 ::mods_getRegisteredMod = function( _modID )

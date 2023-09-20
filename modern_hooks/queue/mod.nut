@@ -1,10 +1,4 @@
-local function msu_SemVer_isSemVer( _string )
-{
-	if (typeof _string != "string") return false;
-	return ::Hooks.__SemVerRegex.capture(_string) != null;
-}
-
-::Hooks.Mod <- class
+::Hooks.SQClass.Mod <- class
 {
 	ID = null;
 	Name = null;
@@ -16,14 +10,10 @@ local function msu_SemVer_isSemVer( _string )
 
 	constructor( _id, _version, _name, _metaData )
 	{
-		if (msu_SemVer_isSemVer(_version))
-		{
-			this.Version = ::Hooks.ModVersion(_version);
-		}
+		if (::Hooks.__msu_SemVer_isSemVer(_version))
+			this.Version = ::Hooks.SQClass.ModVersion(_version);
 		else
-		{
 			this.Version = _version.tofloat(); // purely for backwards compatibility with Adam's Hooks
-		}
 
 		this.ID = _id;
 		this.Name = _name;
@@ -49,6 +39,7 @@ local function msu_SemVer_isSemVer( _string )
 			case "==":
 			case "=":
 			case "":
+			case null:
 				return ::Hooks.Operator.EQ;
 			case "!":
 			case "!=":
@@ -64,53 +55,9 @@ local function msu_SemVer_isSemVer( _string )
 		}
 	}
 
-	function __parseCompatibilityData( _id, _data, _compatibilityType )
-	{
-		local name = "Name" in _data ? _data.Name : null;
-		local version = "Version" in _data ? _data.Version : null;
-		if (typeof version != "string" && version != null)
-			version = version.tostring();
-		local operator = null;
-		if (version != null)
-		{
-			local capture = ::Hooks.__VersionOperatorRegex.capture(version);
-			if (capture == null)
-				::Hooks.__errorAndThrow(format("Mod version information needs to be prefixed with =/==/!/!=/</<=/>/>=, for example \">=1.0.0\" or \"!1.12421\" (for non SemVer mods), currently : \"%s\"", version));
-			operator = ::Hooks.__msu_regexMatch(capture, version, 0);
-			if (operator == null)
-				operator = "";
-			version = version.slice(operator.len());
-			operator = this.__parseOperatorString(operator);
-		}
-		return ::Hooks.CompatibilityData(_id, _compatibilityType, version, operator, name);
-	}
-
-	function declareCompatibilityData( _data )
-	{
-		if ("Requirements" in _data)
-		{
-			foreach (modID, modInfo in _data.Requirements)
-			{
-				this.CompatibilityData.push(this.__parseCompatibilityData(modID, modInfo, ::Hooks.CompatibilityType.Requirement));
-			}
-		}
-		if ("Incompatibilities" in _data)
-		{
-			foreach (modID, modInfo in _data.Incompatibilities)
-			{
-				this.CompatibilityData.push(this.__parseCompatibilityData(modID, modInfo, ::Hooks.CompatibilityType.Incompatibility));
-			}
-		}
-	}
-
 	function getQueuedFunctions()
 	{
 		return this.QueuedFunctions;
-	}
-
-	function queueFunction( _loadOrderData, _function, _bucket = null )
-	{
-		this.QueuedFunctions.push(::Hooks.QueuedFunction(this, _function, _loadOrderData, _bucket));
 	}
 
 	function getMetaData()
@@ -131,5 +78,80 @@ local function msu_SemVer_isSemVer( _string )
 	function getVersionString()
 	{
 		return this.Version.tostring();
+	}
+
+	function __parseCompatibilityModInfo( _modInfo )
+	{
+		local capture = ::Hooks.__CompatibilityRegex.capture(_modInfo);
+		if (capture == null)
+			::Hooks.__errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s)", _modInfo, this.getID(), this.getName()));
+		local ret = {
+			ID = ::Hooks.__msu_regexMatch(capture, _modInfo, 1),
+			Version = ::Hooks.__msu_regexMatch(capture, _modInfo, 3),
+			Operator = null,
+			Name = ::Hooks.__msu_regexMatch(capture, _modInfo, 4)
+		}
+		if (ret.Version != null)
+			ret.Operator = this.__parseOperatorString(::Hooks.__msu_regexMatch(capture, _modInfo, 2))
+		return ret;
+	}
+
+	function requires( ... )
+	{
+		foreach (modInfo in vargv)
+		{
+			local parsed = this.__parseCompatibilityModInfo(modInfo);
+			this.CompatibilityData.push(::Hooks.SQClass.CompatibilityData(
+				parsed.ID,
+				::Hooks.CompatibilityType.Requirement,
+				parsed.Version,
+				parsed.Operator,
+				parsed.Name));
+		}
+	}
+
+	function conflictsWith( ... )
+	{
+		foreach (modInfo in vargv)
+		{
+			local parsed = this.__parseCompatibilityModInfo(modInfo);
+			this.CompatibilityData.push(::Hooks.SQClass.CompatibilityData(
+				parsed.ID,
+				::Hooks.CompatibilityType.Incompatibility,
+				parsed.Version,
+				parsed.Operator,
+				parsed.Name));
+		}
+	}
+
+	function queue( ... )
+	{
+		local bucket;
+		if (typeof vargv[vargv.len()-1] == "integer")
+			bucket = vargv.pop();
+		if (typeof vargv[vargv.len()-1] != "function")
+			::Hooks.__errorAndThrow(format("Mod %s (%s) did not pass a function as the last parameter for queue", this.getID(), this.getName()));
+		local func = vargv.pop();
+		this.QueuedFunctions.push(::Hooks.QueuedFunction(this, func, vargv, bucket));
+	}
+
+	function hook( _src, _func )
+	{
+		::Hooks.__hook(this, _src, _func);
+	}
+
+	function leafHook( _src, _func )
+	{
+		::Hooks.__leafHook(this, _src, _func);
+	}
+
+	function rawHook( _src, _func )
+	{
+		::Hooks.__rawHook(this, _src, _func);
+	}
+
+	function rawLeafHook( _src, _func )
+	{
+		::Hooks.__rawLeafHook(this, _src, _func);
 	}
 }
