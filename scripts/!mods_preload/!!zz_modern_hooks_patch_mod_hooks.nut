@@ -111,8 +111,8 @@ local function inverter(_operator)
 			expression.verOp = "=";
 		currentMod += " " + expression.verOp + " " + expression.version;
 	}
-	mod.requires.acall(compatibilityData.Require);
-	mod.conflictsWith.acall(compatibilityData.ConflictWith);
+	mod.require.acall(compatibilityData.Require);
+	mod.conflictWith.acall(compatibilityData.ConflictWith);
 	loadOrderData.push(func);
 	mod.queue.acall(loadOrderData);
 }

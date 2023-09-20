@@ -96,7 +96,7 @@
 		return ret;
 	}
 
-	function requires( ... )
+	function require( ... )
 	{
 		foreach (modInfo in vargv)
 		{
@@ -110,7 +110,7 @@
 		}
 	}
 
-	function conflictsWith( ... )
+	function conflictWith( ... )
 	{
 		foreach (modInfo in vargv)
 		{
