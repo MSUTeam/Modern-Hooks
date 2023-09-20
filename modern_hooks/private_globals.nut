@@ -355,12 +355,17 @@ local q_meta = {
 
 	function _nexti()
 	{
-
+		// TODO
 	}
 
 	function _delslot()
 	{
+		// TODO
+	}
 
+	function contains( _key )
+	{
+		return _key in q.__Prototype;
 	}
 };
 local m_meta = {
@@ -419,12 +424,17 @@ local m_meta = {
 
 	function _nexti()
 	{
-
+		// TODO
 	}
 
 	function _delslot()
 	{
+		// TODO
+	}
 
+	function contains( _key )
+	{
+		return _key in q.__Prototype.m;
 	}
 }
 
