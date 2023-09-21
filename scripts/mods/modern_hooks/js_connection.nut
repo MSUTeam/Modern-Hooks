@@ -30,11 +30,7 @@ this.js_connection <- {
 
 	function queryData()
 	{
-		if (::IO.enumerateFiles("ui").find("ui/mod_hooks") != null)
-		{
-			::logInfo("Script Hooks present, loading patch");
-			::Hooks.registerJS("ui/mod_hooks.js");
-		}
+
 		return {
 			JS = ::Hooks.JSFiles,
 			CSS = ::Hooks.CSSFiles,
