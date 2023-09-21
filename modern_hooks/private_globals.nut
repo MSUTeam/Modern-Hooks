@@ -519,6 +519,11 @@ q.setdelegate(q_meta);
 	}
 }
 
+::Hooks.__getCachedNameForID <- function( _id )
+{
+	return _id in ::Hooks.CachedModNames ? ::Hooks.CachedModNames[_id] : _id;
+}
+
 ::Hooks.__debughook <- function( _eventType, _src, _line, _funcName )
 {
 	if (_eventType == 'r' && _funcName == "main")
