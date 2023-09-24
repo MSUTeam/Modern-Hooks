@@ -108,18 +108,30 @@ RootScreenFPSModule.prototype.setFPS = function (_value)
 	this.mFPSLabel.html(_value);
 };
 
+// Start Modern Hooks
+
 var Hooks = {
 	registerScreens : registerScreens,
 }
 
+// Define ModernHooksConnection
+
 var ModernHooksConnection = function()
 {
-	this.mSQHandle = null;
+	this.mSQHandle = null
+	this.mContainer = null;
+
+	this.mHeaderContainer = null;
+	this.mContentContainer = null;
+	this.mListScrollContainer = null;
+	this.mFooterContainer = null;
+	this.mTitle = null;
 }
 
 ModernHooksConnection.prototype.onConnection = function( _handle )
 {
 	this.mSQHandle = _handle;
+	this.createDIV($('.root-screen'));
 	var self = this;
 	SQ.call(this.mSQHandle, "queryData", null, function (_data)
 	{
@@ -177,6 +189,108 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 			document.body.appendChild(js);
 		}
 	});
+}
+
+ModernHooksConnection.prototype.createDIV = function (_parentDiv)
+{
+	var self = this;
+	this.mContainer = $('<div class="modern-hooks-popup ui-control dialog display-none opacity-none"/>');
+	_parentDiv.append(this.mContainer);
+
+	this.mHeaderContainer = $('<div class="header"/>');
+	this.mContainer.append(this.mHeaderContainer);
+
+	this.mTitle = $('<div class="title title-font-very-big font-bold font-bottom-shadow font-color-title">Mod Error</div>');
+	this.mHeaderContainer.append(this.mTitle);
+
+	this.mListContainer = this.mContainer.createList(1, 'content-container');
+	this.mListScrollContainer = this.mListContainer.findListScrollContainer();
+	this.mContainer.append(this.mContentContainer);
+
+
+	this.mFooterContainer = $('<div class="footer"/>')
+	this.mContainer.append(this.mFooterContainer);
+
+	this.mFooterContainer.createTextButton("Ok", function()
+	{
+		self.hide();
+	}, "ok-button", 1).on("force-quit", function()
+	{
+		console.error("triggered")
+		$(this).findButtonText().html("Quit Game");
+		$(this).on("click", function()
+		{
+			self.quitGame();
+		});
+	}).on("cancel-quit", function(){
+		$(this).findButtonText().html("Ok");
+		$(this).on("click", function()
+		{
+			self.hide();
+		});
+	});
+}
+
+ModernHooksConnection.prototype.show = function ()
+{
+	this.mContainer.removeClass('display-none').addClass('display-block');
+	this.mContainer.css({ opacity: 1 });
+	this.notifyBackendOnShown();
+}
+
+ModernHooksConnection.prototype.hide = function ()
+{
+	this.notifyBackendOnHidden();
+	this.mContainer.css({ opacity: 0 });
+	this.mContainer.removeClass('display-block').addClass('display-none')
+}
+
+ModernHooksConnection.prototype.isVisible = function ()
+{
+	return this.mContainer.hasClass('display-block');
+}
+
+ModernHooksConnection.prototype.forceQuit = function (_quit)
+{
+	console.error("forcequit")
+	if (_quit)
+	{
+		this.mTitle.text("Fatal Mod Error");
+		this.mFooterContainer.find(".ok-button:first").trigger('force-quit')
+	}
+	else
+	{
+		this.mTitle.text("Mod Error");
+		this.mFooterContainer.find(".ok-button:first").trigger('cancel-quit')
+	}
+}
+
+ModernHooksConnection.prototype.showRawText = function (_data)
+{
+	console.error(_data)
+	this.mListScrollContainer.append($('<div class="mod-raw-text">' + _data + '</div>'));
+	if (!this.isVisible())
+	{
+		console.error("show")
+		this.show();
+	}
+}
+
+ModernHooksConnection.prototype.notifyBackendOnShown = function ()
+{
+	if (this.mSQHandle !== null)
+		SQ.call(this.mSQHandle, 'onScreenShown');
+};
+
+ModernHooksConnection.prototype.notifyBackendOnHidden = function ()
+{
+	if (this.mSQHandle !== null)
+		SQ.call(this.mSQHandle, 'onScreenHidden');
+};
+
+ModernHooksConnection.prototype.quitGame = function ()
+{
+	SQ.call(this.mSQHandle, "quitGame");
 }
 
 registerScreens = function(){}; // need to do this so the document.ready in main.html does nothing

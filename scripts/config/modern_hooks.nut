@@ -47,5 +47,8 @@
 ::include("modern_hooks/squirrel_hooks");
 foreach (file in ::IO.enumerateFiles("modern_hooks/queue"))
 	::include(file);
+::Hooks.JSConnection <- ::new("scripts/mods/modern_hooks/js_connection");
+::Hooks.Popup <- ::Hooks.JSConnection;
+::Hooks.registerCSS("ui/mods/modern_hooks/main.css");
 ::Hooks.__inform("=================Initialized Hooks=================");
 ::setdebughook(::Hooks.__debughook.bindenv(::Hooks));

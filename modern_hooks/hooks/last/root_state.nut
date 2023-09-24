@@ -4,7 +4,6 @@
 	q.onInit = @(__original) function()
 	{
 		::Hooks.RootState = this;
-		::Hooks.JSConnection <- ::new("scripts/mods/modern_hooks/js_connection");
 		::Hooks.JSConnection.connect();
 		this.add("MainMenuState", "scripts/states/main_menu_state");
 	}

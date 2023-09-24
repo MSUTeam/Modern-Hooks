@@ -560,30 +560,27 @@ q.setdelegate(q_meta);
 
 ::Hooks.__errorAndThrow <- function( _text )
 {
-	if ("MSU" in this.getroottable())
-		::MSU.Popup.showRawText(_text);
+	::Hooks.Popup.showRawText(_text);
 	throw _text;
 }
 
 ::Hooks.__errorAndQuit <- function( _text )
 {
 	::logError(_text);
-	if ("MSU" in this.getroottable())
-		::MSU.Popup.showRawText(_text, true);
+	::Hooks.Popup.showRawText(_text, true);
 }
 
 ::Hooks.__error <- function(_text)
 {
 	::logError(_text);
-	if ("MSU" in this.getroottable())
-		::MSU.Popup.showRawText(_text);
+	::Hooks.Popup.showRawText(_text);
 }
 
 ::Hooks.__warn <- function( _text )
 {
 	::logWarning(_text);
-	if (this.DebugMode && "MSU" in this.getroottable())
-		::MSU.Popup.showRawText(_text);
+	if (this.DebugMode)
+		::Hooks.Popup.showRawText(_text);
 }
 
 ::Hooks.__inform <- function( _text )
