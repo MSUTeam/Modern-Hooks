@@ -84,7 +84,7 @@
 	{
 		local capture = ::Hooks.__CompatibilityRegex.capture(_modInfo);
 		if (capture == null)
-			::Hooks.__errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s)", _modInfo, this.getID(), this.getName()));
+			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s)", _modInfo, this.getID(), this.getName()));
 		local ret = {
 			ID = ::Hooks.__msu_regexMatch(capture, _modInfo, 1),
 			Version = ::Hooks.__msu_regexMatch(capture, _modInfo, 3),
@@ -130,7 +130,7 @@
 		if (typeof vargv[vargv.len()-1] == "integer")
 			bucket = vargv.pop();
 		if (typeof vargv[vargv.len()-1] != "function")
-			::Hooks.__errorAndThrow(format("Mod %s (%s) did not pass a function as the last parameter for queue", this.getID(), this.getName()));
+			::Hooks.errorAndThrow(format("Mod %s (%s) did not pass a function as the last parameter for queue", this.getID(), this.getName()));
 		local func = vargv.pop();
 		this.QueuedFunctions.push(::Hooks.QueuedFunction(this, func, vargv, bucket));
 	}
@@ -139,7 +139,7 @@
 	{
 		local params = _func.getinfos().parameters;
 		if (params.len() != 2 || params[1] != "q")
-			::Hooks.__errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter q for basic hooks"))
+			::Hooks.errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter q for basic hooks"))
 		::Hooks.__hook(this, _src, _func);
 	}
 
@@ -147,7 +147,7 @@
 	{
 		local params = _func.getinfos().parameters;
 		if (params.len() != 2 || params[1] != "q")
-			::Hooks.__errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter q for basic leaf hooks"))
+			::Hooks.errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter q for basic leaf hooks"))
 		::Hooks.__leafHook(this, _src, _func);
 	}
 
@@ -155,7 +155,7 @@
 	{
 		local params = _func.getinfos().parameters;
 		if (params.len() != 2 || params[1] != "p")
-			::Hooks.__errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter p for raw hooks"))
+			::Hooks.errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter p for raw hooks"))
 		::Hooks.__rawHook(this, _src, _func);
 	}
 
@@ -163,7 +163,7 @@
 	{
 		local params = _func.getinfos().parameters;
 		if (params.len() != 2 || params[1] != "p")
-			::Hooks.__errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter p for raw leaf hooks"))
+			::Hooks.errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter p for raw leaf hooks"))
 		::Hooks.__rawLeafHook(this, _src, _func);
 	}
 }

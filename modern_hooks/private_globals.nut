@@ -149,7 +149,7 @@
 	{
 		if (!(bucketType in buckets))
 			continue;
-		::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(bucketType)));
+		::Hooks.inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(bucketType)));
 		this.__executeQueuedFunctions(buckets[bucketType]);
 	}
 }
@@ -158,7 +158,7 @@
 {
 	if (::Hooks.AfterHooksBucket == null)
 		return;
-	::Hooks.__inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(::Hooks.QueueBucket.AfterHooks)));
+	::Hooks.inform(format("-----------------Running queue bucket [emph]%s[/emph]-----------------", ::Hooks.__getNameForQueueBucket(::Hooks.QueueBucket.AfterHooks)));
 	this.__executeQueuedFunctions(::Hooks.AfterHooksBucket);
 }
 
@@ -242,7 +242,7 @@
 				if (!(key in p))
 					continue;
 				// warn here because I can imagine a situation where some modder adds a function to player in a bad hook that is overwritten by C++
-				::Hooks.__warn(format("%s is using a native function wrapper on function %s in %s, but that function isn't a native function as it is defined in class %s, which is either the class itself or ancestor", _modID, key, _src, src));
+				::Hooks.warn(format("%s is using a native function wrapper on function %s in %s, but that function isn't a native function as it is defined in class %s, which is either the class itself or ancestor", _modID, key, _src, src));
 			}
 			while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
 		}
@@ -263,10 +263,10 @@ local q_meta = {
 	{
 		local src = "ClassNameHash" in q.__Prototype ? ::IO.scriptFilenameByHash(q.__Prototype.ClassNameHash) : q.__Src;
 		if (typeof _value != "function")
-			::Hooks.__errorAndThrow(format("todo error"));
+			::Hooks.errorAndThrow(format("todo error"));
 		local wrapperParams = _value.getinfos().parameters;
 		if (wrapperParams.len() != 2 || wrapperParams[1] != "__original")
-			::Hooks.__errorAndThrow(format("Mod %s (%s) failed to hook function %s in class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", q.__Mod.getID(), q.__Mod.getName(), _key, src));
+			::Hooks.errorAndThrow(format("Mod %s (%s) failed to hook function %s in class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", q.__Mod.getID(), q.__Mod.getName(), _key, src));
 
 		local originalFunction;
 		local ancestorCounter = 0;
@@ -285,7 +285,7 @@ local q_meta = {
 
 		if (originalFunction == null)
 		{
-			::Hooks.__error(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(),  _key, src));
+			::Hooks.errorAndThrow(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(),  _key, src));
 			return;
 		}
 		local oldInfos = originalFunction.getinfos();
@@ -304,7 +304,7 @@ local q_meta = {
 		}
 		catch (error)
 		{
-			::Hooks.__errorAndThrow(format("The overwrite attempt by mod %s (%s) for function %s in class %s failed because of error: %s", q.__Mod.getID(), q.__Mod.getName(), _key, src, error));
+			::Hooks.errorAndThrow(format("The overwrite attempt by mod %s (%s) for function %s in class %s failed because of error: %s", q.__Mod.getID(), q.__Mod.getName(), _key, src, error));
 		}
 
 		local newParams = newFunc.getinfos().parameters;
@@ -316,7 +316,7 @@ local q_meta = {
 		{
 			if (oldParams.len() != newParams.len())
 			{
-				::Hooks.__warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", q.__Mod.getID(), q.__Mod.getName(), _key, src, oldParams.len()-1, newParams.len()-1))
+				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", q.__Mod.getID(), q.__Mod.getName(), _key, src, oldParams.len()-1, newParams.len()-1))
 			}
 		}
 		else
@@ -334,7 +334,7 @@ local q_meta = {
 		{
 			if (!(_key in p))
 				continue;
-			::Hooks.__warn(format("Mod %s (%s) is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
+			::Hooks.warn(format("Mod %s (%s) is adding a new function %s to %s, but that function already exists in %s, which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
 			break;
 		}
 		while ("SuperName" in p && (p = p[p.SuperName]))
@@ -350,7 +350,7 @@ local q_meta = {
 		local exists = false;
 		local p = q.__Prototype;
 		if ("SuperName" in  p && _key == p.SuperName)
-			::Hooks.__errorAndThrow("modern hooks currently disallows getting the parent prototype from a basic hook")
+			::Hooks.errorAndThrow("modern hooks currently disallows getting the parent prototype from a basic hook")
 		do
 		{
 			if (_key in p)
@@ -398,7 +398,7 @@ local m_meta = {
 		while ("SuperName" in p && (p = p[p.SuperName]))
 		if (fieldTable == null)
 		{
-			::Hooks.__warn(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
+			::Hooks.warn(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
 		}
 		fieldTable[_key] = _value;
 	}
@@ -410,7 +410,7 @@ local m_meta = {
 		{
 			if (!(_key in p.m))
 				continue;
-			::Hooks.__warn(format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), fieldName, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
+			::Hooks.warn(format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), fieldName, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
 			break;
 		}
 		while ("SuperName" in p && (p = p[p.SuperName]))
@@ -432,7 +432,7 @@ local m_meta = {
 		}
 		while ("SuperName" in p && (p = p[p.SuperName]))
 		if (!found)
-			::Hooks.__errorAndThrow(format("Mod %s (%s) is trying to get field %s for bb class %s, but that field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
+			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to get field %s for bb class %s, but that field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
 		return value;
 	}
 
@@ -556,36 +556,4 @@ q.setdelegate(q_meta);
 			this.__error(" src: " + _src + " " + error);
 		}
 	}
-}
-
-::Hooks.__errorAndThrow <- function( _text )
-{
-	::Hooks.Popup.showRawText(_text);
-	throw _text;
-}
-
-::Hooks.__errorAndQuit <- function( _text )
-{
-	::logError(_text);
-	::Hooks.Popup.showRawText(_text, true);
-}
-
-::Hooks.__error <- function(_text)
-{
-	::logError(_text);
-	::Hooks.Popup.showRawText(_text);
-}
-
-::Hooks.__warn <- function( _text )
-{
-	::logWarning(_text);
-	if (this.DebugMode)
-		::Hooks.Popup.showRawText(_text);
-}
-
-::Hooks.__inform <- function( _text )
-{
-	_text = ::String.replace(_text, "[emph]", "<span style=\"color:#FFFFFF\">")
-	_text = ::String.replace(_text, "[/emph]", "</span>")
-	::logInfo("<span style=\"color:#9932CC;\">" + _text + "</span>");
 }

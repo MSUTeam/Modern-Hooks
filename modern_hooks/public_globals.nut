@@ -71,3 +71,35 @@
 	}
 	this.rawLeafHook(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
 }
+
+::Hooks.errorAndThrow <- function( _text )
+{
+	::Hooks.Popup.showRawText(_text);
+	throw _text;
+}
+
+::Hooks.errorAndQuit <- function( _text )
+{
+	::logError(_text);
+	::Hooks.Popup.showRawText(_text, true);
+}
+
+::Hooks.__error <- function(_text)
+{
+	::logError(_text);
+	::Hooks.Popup.showRawText(_text);
+}
+
+::Hooks.warn <- function( _text )
+{
+	::logWarning(_text);
+	if (this.DebugMode)
+		::Hooks.Popup.showRawText(_text);
+}
+
+::Hooks.inform <- function( _text )
+{
+	_text = ::String.replace(_text, "[emph]", "<span style=\"color:#FFFFFF\">")
+	_text = ::String.replace(_text, "[/emph]", "</span>")
+	::logInfo("<span style=\"color:#9932CC;\">" + _text + "</span>");
+}
