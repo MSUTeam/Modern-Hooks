@@ -1,2 +1,2 @@
-::Hooks.__inform("=================Running Queue=================");
+::Hooks.inform("=================Running Queue=================");
 ::Hooks.__runQueue();

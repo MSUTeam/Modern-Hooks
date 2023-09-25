@@ -19,13 +19,13 @@ local function msu_String_isInteger( _string )
 	{
 		if (typeof _semverString != "string")
 		{
-			::Hooks.__error(format("_semverString must be of type string, it is currently a %s", typeof _semverString));
+			::Hooks.error(format("_semverString must be of type string, it is currently a %s", typeof _semverString));
 			throw "SemVer error";
 		}
 		local capture = ::Hooks.__SemVerRegex.capture(_semverString);
 		if (capture == null)
 		{
-			::Hooks.__error(format("Given version '%s' is not formatted according to Semantic Versioning guidelines (see https://semver.org/)", _semverString));
+			::Hooks.error(format("Given version '%s' is not formatted according to Semantic Versioning guidelines (see https://semver.org/)", _semverString));
 			throw "SemVer error";
 		}
 		local version = split(::Hooks.__msu_regexMatch(capture, _semverString, 1), ".").map(@(_v) _v.tointeger());

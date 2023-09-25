@@ -1,6 +1,6 @@
 if (!("mods_hookExactClass" in this.getroottable()))
 	return;
-::Hooks.__inform("=================Patching Modding Script Hooks=================")
+::Hooks.inform("=================Patching Modding Script Hooks=================")
 ::mods_hookExactClass = function( name, func )
 {
 	::Hooks.__rawHook(::Hooks.getMod("mod_hooks"), "scripts/" + name, func);
@@ -48,7 +48,7 @@ local function inverter(_operator)
 	if (codeName == null)
 		codeName = lastRegistered;
 	if (!::Hooks.hasMod(codeName))
-		::Hooks.__errorAndThrow(format("Mod %s is trying to queue without registering first", codeName));
+		::Hooks.errorAndThrow(format("Mod %s is trying to queue without registering first", codeName));
 
 	// parse expression using mod_hooks function
 	local match = function(s,m,i) {

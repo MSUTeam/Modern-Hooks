@@ -84,7 +84,7 @@
 	::Hooks.Popup.showRawText(_text, true);
 }
 
-::Hooks.__error <- function(_text)
+::Hooks.error <- function(_text)
 {
 	::logError(_text);
 	::Hooks.Popup.showRawText(_text);

@@ -228,7 +228,7 @@
 		if (notEntity)
 		{
 			// error here because this hook won't work without an onInit function
-			::Hooks.__error(format("%s is using a native function wrapper on class %s which isn't a tactical or world entity", _modID, _src))
+			::Hooks.error(format("%s is using a native function wrapper on class %s which isn't a tactical or world entity", _modID, _src))
 			return;
 		}
 

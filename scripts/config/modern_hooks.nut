@@ -50,5 +50,5 @@ foreach (file in ::IO.enumerateFiles("modern_hooks/queue"))
 ::Hooks.JSConnection <- ::new("scripts/mods/modern_hooks/js_connection");
 ::Hooks.Popup <- ::Hooks.JSConnection;
 ::Hooks.registerCSS("ui/mods/modern_hooks/main.css");
-::Hooks.__inform("=================Initialized Hooks=================");
+::Hooks.inform("=================Initialized Hooks=================");
 ::setdebughook(::Hooks.__debughook.bindenv(::Hooks));
