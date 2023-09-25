@@ -329,6 +329,10 @@ local q_meta = {
 
 	function _newslot( _key, _value )
 	{
+		if (typeof _value != "function")
+		{
+			::Hooks.__errorAndThrow(format("Mod %s (%s) is trying to add index \'%s\' whose value is not a function directly in bb class %s. This is not allowed, such fields must be added to the class's \'m\' table instead.", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src))
+		}
 		local p = q.__Prototype;
 		if (_key in p)
 		{
