@@ -343,14 +343,11 @@ local q_meta = {
 
 	function _get( _key )
 	{
-		// this needs special handling for ancestors (p = p[p.SuperName]) added
-		// right now this will return the ancestor prototype directly
-		// rather than a q wrapper for the prototype
 		local value;
 		local exists = false;
 		local p = q.__Prototype;
-		if ("SuperName" in  p && _key == p.SuperName)
-			::Hooks.errorAndThrow("modern hooks currently disallows getting the parent prototype from a basic hook")
+		if ("SuperName" in p && _key == p.SuperName)
+			::Hooks.errorAndThrow("modern hooks disallows getting the parent prototype from a basic hook")
 		do
 		{
 			if (_key in p)
