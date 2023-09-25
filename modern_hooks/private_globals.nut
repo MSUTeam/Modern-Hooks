@@ -43,27 +43,27 @@
 		{
 			case ::Hooks.CompatibilityCheckResult.ModMissing:
 				local name = error.Target.getModID() in ::Hooks.CachedModNames ? ::Hooks.CachedModNames[error.Target.getModID()] : error.Target.getModName();
-				this.__error(format("%s (%s) requires %s (%s)", error.Source.getID(), error.Source.getName(), error.Target.getModID(), name));
+				::Hooks.error(format("%s (%s) requires %s (%s)", error.Source.getID(), error.Source.getName(), error.Target.getModID(), name));
 				break;
 			case ::Hooks.CompatibilityCheckResult.ModPresent:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				this.__error(format("%s (%s) is incompatible with %s (%s)", error.Source.getID(), error.Source.getName(), mod.getID(), mod.getName()));
+				::Hooks.error(format("%s (%s) is incompatible with %s (%s)", error.Source.getID(), error.Source.getName(), mod.getID(), mod.getName()));
 				break;
 			case ::Hooks.CompatibilityCheckResult.TooSmall:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				this.__error(format("%s (%s) version %s is outdated for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
+				::Hooks.error(format("%s (%s) version %s is outdated for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
 				break;
 			case ::Hooks.CompatibilityCheckResult.TooBig:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				this.__error(format("%s (%s) version %s is too new for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
+				::Hooks.error(format("%s (%s) version %s is too new for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
 				break;
 			case ::Hooks.CompatibilityCheckResult.Incorrect:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				this.__error(format("%s (%s) version %s is wrong for %s (%s), which requires (a) version %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
+				::Hooks.error(format("%s (%s) version %s is wrong for %s (%s), which requires (a) version %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
 				break;
 		}
 	}
-	this.__errorAndQuit("Errors occured when validating mod compatibility, the game was therefore not loaded correctly");
+	::Hooks.errorAndQuit("Errors occured when validating mod compatibility, the game was therefore not loaded correctly");
 	return false;
 }
 
@@ -73,10 +73,10 @@
 		_metaData = {};
 	if (_modID in this.Mods)
 	{
-		this.__errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
+		::Hooks.errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
 	}
 	this.Mods[_modID] <- ::Hooks.SQClass.Mod(_modID, _version, _modName, _metaData);
-	this.__inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
+	::Hooks.inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
 	return this.Mods[_modID];
 }
 
@@ -102,7 +102,7 @@
 	{
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
-		this.__inform(format("Executing queued function [emph]%i[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), mod.getName(), mod.getID(), versionString));
+		::Hooks.inform(format("Executing queued function [emph]%i[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), mod.getName(), mod.getID(), versionString));
 		queuedFunction.getFunction()();
 	}
 }
@@ -505,7 +505,7 @@ q.setdelegate(q_meta);
 		{
 			if (bbclass.Prototype == null)
 			{
-				this.__error(format("%s was never proceessed for hooks", src));
+				::Hooks.error(format("%s was never proceessed for hooks", src));
 				continue;
 			}
 			this.__processRawHooks(src);
@@ -553,7 +553,7 @@ q.setdelegate(q_meta);
 		}
 		catch (error)
 		{
-			this.__error(" src: " + _src + " " + error);
+			::Hooks.error(" src: " + _src + " " + error);
 		}
 	}
 }
