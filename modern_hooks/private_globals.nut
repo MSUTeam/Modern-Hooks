@@ -389,12 +389,12 @@ local m_meta = {
 		local p = q.__Prototype;
 		do
 		{
-			if (("m" in p) && !(_key in p.m)) // state.nut
+			if (!(_key in p.m)) // state.nut
 				continue;
 			fieldTable = p.m;
 			break;
 		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
+		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
 		if (fieldTable == null)
 		{
 			::Hooks.warn(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
@@ -407,13 +407,13 @@ local m_meta = {
 		local p = q.__Prototype;
 		do
 		{
-			if (("m" in p) && !(_key in p.m)) // state.nut
+			if (!(_key in p.m)) // state.nut
 				continue;
 			// for some reason ::format needs to be specified as global here
 			::Hooks.error(::format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
 			break;
 		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
+		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
 		q.__Prototype.m[_key] <- _value;
 	}
 
@@ -424,13 +424,13 @@ local m_meta = {
 		local p = q.__Prototype;
 		do
 		{
-			if (("m" in p) && !(_key in p.m)) // state.nut
+			if (!(_key in p.m)) // state.nut
 				continue;
 			found = true;
 			value = p.m[_key];
 			break;
 		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
+		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
 		if (!found)
 			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to get field %s for bb class %s, but that field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
 		return value;
