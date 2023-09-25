@@ -321,7 +321,7 @@ local q_meta = {
 		}
 		else
 		{
-			::Hookw.__errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", q.__Mod.getID(), q.__Mod.getName(), _key, src))
+			::Hooks.__errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", q.__Mod.getID(), q.__Mod.getName(), _key, src))
 		}
 
 		q.__Prototype[_key] <- newFunc;
