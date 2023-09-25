@@ -389,7 +389,7 @@ local m_meta = {
 		local p = q.__Prototype;
 		do
 		{
-			if (!(_key in p.m))
+			if (("m" in p) && !(_key in p.m)) // state.nut
 				continue;
 			fieldTable = p.m;
 			break;
@@ -407,7 +407,7 @@ local m_meta = {
 		local p = q.__Prototype;
 		do
 		{
-			if (!(_key in p.m))
+			if (("m" in p) && !(_key in p.m)) // state.nut
 				continue;
 			::Hooks.warn(format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), fieldName, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
 			break;
@@ -423,7 +423,7 @@ local m_meta = {
 		local p = q.__Prototype;
 		do
 		{
-			if (!(_key in p.m))
+			if (("m" in p) && !(_key in p.m)) // state.nut
 				continue;
 			found = true;
 			value = p.m[_key];
