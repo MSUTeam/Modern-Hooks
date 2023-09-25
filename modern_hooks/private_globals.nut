@@ -392,7 +392,6 @@ local m_meta = {
 			if (!(_key in p.m))
 				continue;
 			fieldTable = p.m;
-			::logInfo("test");
 			break;
 		}
 		while ("SuperName" in p && (p = p[p.SuperName]))
