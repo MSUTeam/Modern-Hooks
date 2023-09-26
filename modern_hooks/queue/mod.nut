@@ -143,12 +143,12 @@
 		::Hooks.__hook(this, _src, _func);
 	}
 
-	function leafHook( _src, _func )
+	function hookTree( _src, _func )
 	{
 		local params = _func.getinfos().parameters;
 		if (params.len() != 2 || params[1] != "q")
 			::Hooks.errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter q for basic leaf hooks"))
-		::Hooks.__leafHook(this, _src, _func);
+		::Hooks.__hookTree(this, _src, _func);
 	}
 
 	function rawHook( _src, _func )
@@ -159,11 +159,11 @@
 		::Hooks.__rawHook(this, _src, _func);
 	}
 
-	function rawLeafHook( _src, _func )
+	function rawHookTree( _src, _func )
 	{
 		local params = _func.getinfos().parameters;
 		if (params.len() != 2 || params[1] != "p")
 			::Hooks.errorAndThrow(format("Modern Hooks requires that the function being used accepts a single parameter p for raw leaf hooks"))
-		::Hooks.__rawLeafHook(this, _src, _func);
+		::Hooks.__rawHookTree(this, _src, _func);
 	}
 }

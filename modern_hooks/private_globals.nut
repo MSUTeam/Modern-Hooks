@@ -166,7 +166,7 @@
 {
 	this.__initClass(_src);
 	this.BBClass[_src].Prototype = _prototype;
-	this.__registerForAncestorLeafHooks(_prototype, _src);
+	this.__registerForAncestorTreeHooks(_prototype, _src);
 }
 
 ::Hooks.__initClass <- function( _src, _modID = null )
@@ -181,14 +181,14 @@
 	if (_modID != null && !(_modID in this.BBClass[_src].Mods))
 		this.BBClass[_src].Mods[_modID] <- {
 			RawHooks = [],
-			LeafHooks = [],
+			TreeHooks = [],
 			// MetaHooks = [] to do later
 		};
 }
 
 
 
-::Hooks.__registerForAncestorLeafHooks <- function( _prototype, _src )
+::Hooks.__registerForAncestorTreeHooks <- function( _prototype, _src )
 {
 	local src = _src;
 	local p = _prototype;
@@ -468,15 +468,15 @@ q.setdelegate(q_meta);
 	});
 }
 
-::Hooks.__rawLeafHook <- function( _mod, _src, _func )
+::Hooks.__rawHookTree <- function( _mod, _src, _func )
 {
 	this.__initClass(_src, _mod.getID());
-	this.BBClass[_src].Mods[_mod.getID()].LeafHooks.push(_func);
+	this.BBClass[_src].Mods[_mod.getID()].TreeHooks.push(_func);
 }
 
-::Hooks.__leafHook <- function( _mod, _src, _func )
+::Hooks.__hookTree <- function( _mod, _src, _func )
 {
-	::Hooks.__rawLeafHook(_mod, _src, function(p) {
+	::Hooks.__rawHookTree(_mod, _src, function(p) {
 		q.__Prototype = p;
 		q.__Mod = _mod;
 		q.__Src = _src;
@@ -511,7 +511,7 @@ q.setdelegate(q_meta);
 		// leaf hook logic
 		foreach (prototype in bbclass.Descendants)
 			foreach (mod in bbclass.Mods)
-				foreach (hook in mod.LeafHooks)
+				foreach (hook in mod.TreeHooks)
 					hook(prototype)
 	}
 }
