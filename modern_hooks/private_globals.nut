@@ -308,7 +308,7 @@ local q_meta = {
 		}
 
 		local newParams = newFunc.getinfos().parameters;
-		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] != "...")
+		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] == "...")
 		{
 			// one of the functions uses vargv, do not perform validation
 		}
