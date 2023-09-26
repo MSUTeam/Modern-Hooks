@@ -69,7 +69,7 @@
 		::Hooks.error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
 		return;
 	}
-	this.rawLeafHook(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
+	this.__rawHookTree(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
 }
 
 ::Hooks.errorAndThrow <- function( _text )

@@ -8,7 +8,7 @@
 			Mods = {
 				mod_modern_hooks = {
 					RawHooks = [],
-					LeafHooks = [],
+					TreeHooks = [],
 					MetaHooks = []
 				}
 			},
