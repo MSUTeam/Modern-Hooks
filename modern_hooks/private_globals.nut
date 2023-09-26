@@ -316,7 +316,7 @@ local q_meta = {
 		{
 			if (oldParams.len() != newParams.len())
 			{
-				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrappper returned function with %i)", q.__Mod.getID(), q.__Mod.getName(), _key, src, oldParams.len()-1, newParams.len()-1))
+				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", q.__Mod.getID(), q.__Mod.getName(), _key, src, oldParams.len()-1, newParams.len()-1))
 			}
 		}
 		else
