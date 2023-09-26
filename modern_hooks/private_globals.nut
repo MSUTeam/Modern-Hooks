@@ -301,6 +301,7 @@ local q_meta = {
 		try
 		{
 			newFunc = _value(originalFunction);
+			if (typeof newFunc != "function") throw format("trying to set \'%s\' to something other than a function", _key);
 		}
 		catch (error)
 		{
