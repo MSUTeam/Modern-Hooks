@@ -321,7 +321,7 @@ local q_meta = {
 		}
 		else
 		{
-			::Hooks.__errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", q.__Mod.getID(), q.__Mod.getName(), _key, src))
+			::Hooks.errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", q.__Mod.getID(), q.__Mod.getName(), _key, src))
 		}
 
 		q.__Prototype[_key] <- newFunc;
@@ -331,7 +331,7 @@ local q_meta = {
 	{
 		if (typeof _value != "function")
 		{
-			::Hooks.__errorAndThrow(format("Mod %s (%s) is trying to add index \'%s\' whose value is not a function directly in bb class %s. This is not allowed, such fields must be added to the class's \'m\' table instead.", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src))
+			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to add index \'%s\' whose value is not a function directly in bb class %s. This is not allowed, such fields must be added to the class's \'m\' table instead.", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src))
 		}
 		local p = q.__Prototype;
 		if (_key in p)
