@@ -1,10 +1,6 @@
-::Hooks.__getNameForQueueBucket <- function( _queueBucketID ) // not a fan of this function but without MSU enums this is a pain
+::Hooks.__getNameForQueueBucket <- function( _queueBucketID )
 {
-	foreach (key, val in ::Hooks.QueueBucket)
-	{
-		if (_queueBucketID == val)
-			return key;
-	}
+	return ::Hooks.QueueBucketName[_queueBucketID];
 }
 
 ::Hooks.__msu_regexMatch <- function( _capture, _string, _group )

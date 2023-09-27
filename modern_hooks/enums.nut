@@ -10,6 +10,12 @@
 	FirstWorldInit = 8
 };
 
+::Hooks.QueueBucketName <- array(::Hooks.QueueBucket.len());
+foreach (key, value in ::Hooks.QueueBucket)
+{
+	::Hooks.QueueBucketName[value] = key;
+}
+
 ::Hooks.Operator <- {
 	LT = 1, // <
 	LE = 2, // <=
