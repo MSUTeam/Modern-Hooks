@@ -292,9 +292,10 @@ local q_meta = {
 		local oldParams = oldInfos.parameters;
 		if (ancestorCounter > 1)
 		{
+			local superName = q.__Prototype.SuperName;
 			originalFunction = function(...) {
 				vargv.insert(0, this);
-				return this[q.__Prototype.SuperName][_key].acall(vargv);
+				return this[superName][_key].acall(vargv);
 			}
 		}
 		local newFunc
