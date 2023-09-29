@@ -278,7 +278,8 @@
 	::Hooks.__rawHookTree(_mod, _src, function(p) {
 		::Hooks.__Q.QTree.__Prototype = p;
 		::Hooks.__Q.QTree.__Mod = _mod;
-		::Hooks.__Q.QTree.__Src = _src;
+		::Hooks.__Q.QTree.__Target = _src;
+		::Hooks.__Q.QTree.__Src = ::IO.scriptFilenameByHash(p.ClassNameHash);
 		_func(::Hooks.__Q.QTree);
 	});
 }
@@ -307,7 +308,6 @@
 			this.__processRawHooks(src);
 		}
 
-		::Hooks.__Q.QTree.__Target = src
 		// leaf hook logic
 		foreach (prototype in bbclass.Descendants)
 			foreach (mod in bbclass.Mods)
