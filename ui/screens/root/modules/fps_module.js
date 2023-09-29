@@ -216,7 +216,6 @@ ModernHooksConnection.prototype.createDIV = function (_parentDiv)
 		self.hide();
 	}, "ok-button", 1).on("force-quit", function()
 	{
-		console.error("triggered")
 		$(this).findButtonText().html("Quit Game");
 		$(this).on("click", function()
 		{
@@ -252,7 +251,6 @@ ModernHooksConnection.prototype.isVisible = function ()
 
 ModernHooksConnection.prototype.forceQuit = function (_quit)
 {
-	console.error("forcequit")
 	if (_quit)
 	{
 		this.mTitle.text("Fatal Mod Error");
@@ -271,7 +269,6 @@ ModernHooksConnection.prototype.showRawText = function (_data)
 	this.mListScrollContainer.append($('<div class="mod-raw-text">' + _data + '</div>'));
 	if (!this.isVisible())
 	{
-		console.error("show")
 		this.show();
 	}
 }
