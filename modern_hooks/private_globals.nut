@@ -251,208 +251,6 @@
 	}
 }
 
-local q;
-q = {
-	__Src = null,
-	__Prototype = null
-	__Mod = null
-	m = {}
-}
-local q_meta = {
-	function _set( _key, _value )
-	{
-		local src = "ClassNameHash" in q.__Prototype ? ::IO.scriptFilenameByHash(q.__Prototype.ClassNameHash) : q.__Src;
-		if (typeof _value != "function")
-			::Hooks.errorAndThrow(format("todo error"));
-		local wrapperParams = _value.getinfos().parameters;
-		if (wrapperParams.len() != 2 || wrapperParams[1] != "__original")
-			::Hooks.errorAndThrow(format("Mod %s (%s) failed to hook function %s in class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", q.__Mod.getID(), q.__Mod.getName(), _key, src));
-
-		local originalFunction;
-		local ancestorCounter = 0;
-		local p = q.__Prototype;
-		do
-		{
-			if (!(_key in p))
-			{
-				++ancestorCounter;
-				continue;
-			}
-			originalFunction = p[_key];
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
-
-		if (originalFunction == null)
-		{
-			::Hooks.errorAndThrow(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(),  _key, src));
-			return;
-		}
-		local oldInfos = originalFunction.getinfos();
-		local oldParams = oldInfos.parameters;
-		if (ancestorCounter > 1)
-		{
-			local superName = q.__Prototype.SuperName;
-			originalFunction = function(...) {
-				vargv.insert(0, this);
-				return this[superName][_key].acall(vargv);
-			}
-		}
-		local newFunc
-		try
-		{
-			newFunc = _value(originalFunction);
-		}
-		catch (error)
-		{
-			::Hooks.errorAndThrow(format("The overwrite attempt by mod %s (%s) for function %s in class %s failed because of error: %s", q.__Mod.getID(), q.__Mod.getName(), _key, src, error));
-		}
-
-		local newParams = newFunc.getinfos().parameters;
-		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] == "...")
-		{
-			// one of the functions uses vargv, do not perform validation
-		}
-		else if (oldInfos.native == false)
-		{
-			if (oldParams.len() != newParams.len())
-			{
-				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", q.__Mod.getID(), q.__Mod.getName(), _key, src, oldParams.len()-1, newParams.len()-1))
-			}
-		}
-		else
-		{
-			::Hooks.errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", q.__Mod.getID(), q.__Mod.getName(), _key, src))
-		}
-
-		q.__Prototype[_key] <- newFunc;
-	}
-
-	function _newslot( _key, _value )
-	{
-		if (typeof _value != "function")
-		{
-			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to add index \'%s\' whose value is not a function directly in bb class %s. This is not allowed, such fields must be added to the class's \'m\' table instead.", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src))
-		}
-		local p = q.__Prototype;
-		if (_key in p)
-		{
-			::Hooks.warn(format("Mod %s (%s) is adding a new function %s to %s, but that function already exists in the bb class", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
-		}
-		q.__Prototype[_key] <- _value;
-	}
-
-	function _get( _key )
-	{
-		local value;
-		local exists = false;
-		local p = q.__Prototype;
-		if ("SuperName" in p && _key == p.SuperName)
-			::Hooks.errorAndThrow("modern hooks disallows getting the parent prototype from a basic hook")
-		do
-		{
-			if (_key in p)
-			{
-				value = p[_key];
-				exists = true;
-				break;
-			}
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
-
-		if (exists)
-			return value;
-		throw null;
-	}
-
-	function _nexti()
-	{
-		// TODO
-	}
-
-	function _delslot()
-	{
-		// TODO
-	}
-
-	function contains( _key )
-	{
-		return _key in q.__Prototype;
-	}
-};
-local m_meta = {
-	function _set( _key, _value )
-	{
-		local fieldTable = null;
-		local p = q.__Prototype;
-		do
-		{
-			if (!(_key in p.m)) // state.nut
-				continue;
-			fieldTable = p.m;
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
-		if (fieldTable == null)
-		{
-			::Hooks.warn(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
-		}
-		fieldTable[_key] = _value;
-	}
-
-	function _newslot( _key, _value )
-	{
-		local p = q.__Prototype;
-		do
-		{
-			if (!(_key in p.m)) // state.nut
-				continue;
-			// for some reason ::format needs to be specified as global here
-			::Hooks.error(::format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src, p == q.__Prototype ? q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)))
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
-		q.__Prototype.m[_key] <- _value;
-	}
-
-	function _get( _key )
-	{
-		local value;
-		local found = false;
-		local p = q.__Prototype;
-		do
-		{
-			if (!(_key in p.m)) // state.nut
-				continue;
-			found = true;
-			value = p.m[_key];
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
-		if (!found)
-			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to get field %s for bb class %s, but that field doesn't exist in the class or any of its ancestors", q.__Mod.getID(), q.__Mod.getName(), _key, q.__Src));
-		return value;
-	}
-
-	function _nexti()
-	{
-		// TODO
-	}
-
-	function _delslot()
-	{
-		// TODO
-	}
-
-	function contains( _key )
-	{
-		return _key in q.__Prototype.m;
-	}
-}
-
-q.m.setdelegate(m_meta);
-q.setdelegate(q_meta);
-
 ::Hooks.__rawHook <- function( _mod, _src, _func )
 {
 	this.__initClass(_src, _mod.getID());
@@ -462,10 +260,10 @@ q.setdelegate(q_meta);
 ::Hooks.__hook <- function( _mod, _src, _func )
 {
 	::Hooks.__rawHook(_mod, _src, function(p) {
-		q.__Prototype = p;
-		q.__Mod = _mod;
-		q.__Src = _src;
-		_func(q);
+		::Hooks.__Q.Q.__Prototype = p;
+		::Hooks.__Q.Q.__Mod = _mod;
+		::Hooks.__Q.Q.__Src = _src;
+		_func(::Hooks.__Q.Q);
 	});
 }
 
@@ -478,10 +276,10 @@ q.setdelegate(q_meta);
 ::Hooks.__hookTree <- function( _mod, _src, _func )
 {
 	::Hooks.__rawHookTree(_mod, _src, function(p) {
-		q.__Prototype = p;
-		q.__Mod = _mod;
-		q.__Src = _src;
-		_func(q);
+		::Hooks.__Q.QTree.__Prototype = p;
+		::Hooks.__Q.QTree.__Mod = _mod;
+		::Hooks.__Q.QTree.__Src = _src;
+		_func(::Hooks.__Q.QTree);
 	});
 }
 
@@ -509,6 +307,7 @@ q.setdelegate(q_meta);
 			this.__processRawHooks(src);
 		}
 
+		::Hooks.__Q.QTree.__Target = src
 		// leaf hook logic
 		foreach (prototype in bbclass.Descendants)
 			foreach (mod in bbclass.Mods)

@@ -42,6 +42,7 @@
 }
 
 ::include("modern_hooks/enums");
+::include("modern_hooks/q_object");
 ::include("modern_hooks/private_globals");
 ::include("modern_hooks/public_globals");
 ::include("modern_hooks/squirrel_hooks");
