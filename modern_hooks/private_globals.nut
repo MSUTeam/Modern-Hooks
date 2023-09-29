@@ -103,7 +103,15 @@
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
 		::Hooks.inform(format("Executing queued function [emph]%i[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), mod.getName(), mod.getID(), versionString));
-		queuedFunction.getFunction()();
+		try
+		{
+			queuedFunction.getFunction()();
+		}
+		catch (error)
+		{
+			::Hooks.errorAndQuit(error);
+		}
+
 	}
 }
 
@@ -289,7 +297,16 @@
 	local p = this.BBClass[_src].Prototype;
 	foreach (mod in this.BBClass[_src].Mods)
 		foreach (hook in mod.RawHooks)
-			hook(p);
+		{
+			try
+			{
+				hook(p);
+			}
+			catch (error)
+			{
+				::Hooks.errorAndQuit(error);
+			}
+		}
 	this.BBClass[_src].Processed = true;
 }
 
@@ -312,7 +329,16 @@
 		foreach (prototype in bbclass.Descendants)
 			foreach (mod in bbclass.Mods)
 				foreach (hook in mod.TreeHooks)
-					hook(prototype)
+				{
+					try
+					{
+						hook(prototype)
+					}
+					catch (error)
+					{
+						::Hooks.errorAndQuit(error);
+					}
+				}
 	}
 }
 
