@@ -265,10 +265,7 @@
 ::Hooks.__hook <- function( _mod, _src, _func )
 {
 	::Hooks.__rawHook(_mod, _src, function(p) {
-		::Hooks.__Q.Q.__Prototype = p;
-		::Hooks.__Q.Q.__Mod = _mod;
-		::Hooks.__Q.Q.__Src = _src;
-		_func(::Hooks.__Q.Q);
+		_func(::Hooks.__Q.Q(_mod, _src, p));
 	});
 }
 
@@ -284,11 +281,7 @@
 ::Hooks.__hookTree <- function( _mod, _src, _func )
 {
 	::Hooks.__rawHookTree(_mod, _src, function(p) {
-		::Hooks.__Q.QTree.__Prototype = p;
-		::Hooks.__Q.QTree.__Mod = _mod;
-		::Hooks.__Q.QTree.__Target = _src;
-		::Hooks.__Q.QTree.__Src = ::IO.scriptFilenameByHash(p.ClassNameHash);
-		_func(::Hooks.__Q.QTree);
+		_func(::Hooks.__Q.QTree(_mod, _src, p, ::IO.scriptFilenameByHash(p.ClassNameHash)));
 	});
 }
 

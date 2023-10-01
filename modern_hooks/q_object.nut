@@ -1,152 +1,9 @@
 ::Hooks.__Q <- {
-	Q = {
-		__Src = null,
-		__Prototype = null,
-		__Mod = null,
-		m = {}
-	},
-	QTree = {
-		__Target = null,
-		__Src = null,
-		__Prototype = null,
-		__Mod = null,
-		m = {}
-	}
-	QMeta = {
-		function _set( _key, _value )
-		{
-			return ::Hooks.__Q.set(::Hooks.__Q.Q, _key, _value);
-		}
-
-		function _get( _key )
-		{
-			return ::Hooks.__Q.get(::Hooks.__Q.Q, _key);
-		}
-
-		function _newslot( _key, _value )
-		{
-			return ::Hooks.__Q.newSlot(::Hooks.__Q.Q, _key, _value);
-		}
-
-		function _delslot( _key )
-		{
-			// TODO
-		}
-
-		function _nexti( _prev )
-		{
-			// TODO
-		}
-
-		function contains( _key )
-		{
-			return ::Hooks.__Q.contains(::Hooks.__Q.Q.__Prototype, _key);
-		}
-	},
-	MMeta = {
-		function _set( _key, _value )
-		{
-			return ::Hooks.__Q.setM(::Hooks.__Q.Q, _key, _value);
-		}
-
-		function _get( _key )
-		{
-			return ::Hooks.__Q.getM(::Hooks.__Q.Q, _key);
-		}
-
-		function _newslot( _key, _value )
-		{
-			return ::Hooks.__Q.newSlotM(::Hooks.__Q.Q, _key, _value);
-		}
-
-		function _delslot( _key )
-		{
-			// TODO
-		}
-
-		function _nexti( _prev )
-		{
-			// TODO
-		}
-
-		function contains( _key )
-		{
-			return ::Hooks.__Q.contains(::Hooks.__Q.Q.__Prototype.m, _key);
-		}
-	},
-	QTreeMeta = {
-		function _set( _key, _value )
-		{
-			return ::Hooks.__Q.set(::Hooks.__Q.QTree, _key, _value);
-		}
-
-		function _get( _key )
-		{
-			return ::Hooks.__Q.get(::Hooks.__Q.QTree, _key);
-		}
-
-		function _newslot( _key, _value )
-		{
-			return ::Hooks.__Q.newSlot(::Hooks.__Q.QTree, _key, _value);
-		}
-
-		function _delslot( _key )
-		{
-			// TODO
-		}
-
-		function _nexti( _prev )
-		{
-			// TODO
-		}
-
-		function contains( _key )
-		{
-			return ::Hooks.__Q.contains(::Hooks.__Q.QTree.__Prototype, _key);
-		}
-	},
-	MTreeMeta = {
-		function _set( _key, _value )
-		{
-			return ::Hooks.__Q.setM(::Hooks.__Q.QTree, _key, _value);
-		}
-
-		function _get( _key )
-		{
-			return ::Hooks.__Q.getM(::Hooks.__Q.QTree, _key);
-		}
-
-		function _newslot( _key, _value )
-		{
-			return ::Hooks.__Q.newSlotM(::Hooks.__Q.QTree, _key, _value);
-		}
-
-		function _delslot( _key )
-		{
-			// TODO
-		}
-
-		function _nexti( _prev )
-		{
-			// TODO
-		}
-
-		function contains( _key )
-		{
-			return ::Hooks.__Q.contains(::Hooks.__Q.QTree.__Prototype.m, _key);
-		}
-	}
-
 	function buildTargetString( _q )
 	{
-		if (!this.isQTree(_q))
+		if (!(_q instanceof ::Hooks.__Q.QTree))
 			return _q.__Src;
 		return format("%s (which is a descendent of hookTree target %s)", _q.__Src, _q.__Target);
-	}
-
-	function isQTree( _q )
-	{
-		return "__Target" in _q
 	}
 
 	function newSlot( _q, _key, _value )
@@ -308,7 +165,94 @@
 		return _key in _table;
 	}
 }
-::Hooks.__Q.Q.setdelegate(::Hooks.__Q.QMeta);
-::Hooks.__Q.Q.m.setdelegate(::Hooks.__Q.MMeta);
-::Hooks.__Q.QTree.setdelegate(::Hooks.__Q.QTreeMeta);
-::Hooks.__Q.QTree.m.setdelegate(::Hooks.__Q.MTreeMeta);
+
+::Hooks.__Q.Q <- class {
+	__Src = null;
+	__Prototype = null;
+	__Mod = null;
+	m = null;
+	constructor(_mod, _src, _prototype)
+	{
+		this.__Mod = _mod;
+		this.__Src = _src;
+		this.__Prototype = _prototype;
+		this.m = ::Hooks.__Q.Qm(this);
+	}
+
+	function _set( _key, _value )
+	{
+		return ::Hooks.__Q.set(this, _key, _value);
+	}
+
+	function _get( _key )
+	{
+		return ::Hooks.__Q.get(this, _key);
+	}
+
+	function _newslot( _key, _value )
+	{
+		return ::Hooks.__Q.newSlot(this, _key, _value);
+	}
+
+	function _delslot( _key )
+	{
+		// TODO
+	}
+
+	function _nexti( _prev )
+	{
+		// TODO
+	}
+
+	function contains( _key )
+	{
+		return ::Hooks.__Q.contains(this.__Prototype, _key);
+	}
+},
+
+::Hooks.__Q.QTree <- class extends ::Hooks.__Q.Q {
+	__Target = null;
+	constructor(_mod, _src, _prototype, _target)
+	{
+		base.constructor(_mod, _src, _prototype);
+		this.__Target = _target;
+	}
+}
+
+::Hooks.__Q.Qm <- class {
+	Q = null;
+	constructor(_Q)
+	{
+		this.Q = _Q.weakref();
+	}
+
+	function _set( _key, _value )
+	{
+		return ::Hooks.__Q.setM(this.Q, _key, _value);
+	}
+
+	function _get( _key )
+	{
+		return ::Hooks.__Q.getM(this.Q, _key);
+	}
+
+	function _newslot( _key, _value )
+	{
+		return ::Hooks.__Q.newSlotM(this.Q, _key, _value);
+	}
+
+	function _delslot( _key )
+	{
+		// TODO
+	}
+
+	function _nexti( _prev )
+	{
+		// TODO
+	}
+
+	function contains( _key )
+	{
+		return ::Hooks.__Q.contains(this.Q.__Prototype.m, _key);
+	}
+}
