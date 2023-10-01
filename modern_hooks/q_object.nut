@@ -208,9 +208,21 @@
 		// TODO
 	}
 
-	function contains( _key )
+	function contains( _key, _checkAncestors = false )
 	{
-		return ::Hooks.__Q.contains(this.__Prototype, _key);
+		if (_checkAncestors == false)
+			return _key in this.__Prototype;
+		local contains = false;
+		local p = this.__Prototype;
+		do
+		{
+			if (!(_key in p))
+				continue;
+			contains = true;
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		return contains;
 	}
 },
 
@@ -255,8 +267,20 @@
 		// TODO
 	}
 
-	function contains( _key )
+	function contains( _key, _checkAncestors = false )
 	{
-		return ::Hooks.__Q.contains(this.Q.__Prototype.m, _key);
+		if (_checkAncestors == false)
+			return _key in this.__Prototype.m;
+		local contains = false;
+		local p = this.__Prototype;
+		do
+		{
+			if (!(_key in p.m))
+				continue;
+			contains = true;
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		return contains;
 	}
 }
