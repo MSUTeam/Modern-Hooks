@@ -255,7 +255,7 @@
 			m = p.m;
 			break;
 		}
-		while ("SuperName" in p && (p = p[p.SuperName]) & ("m" in p))
+		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
 		if (m == null)
 			::Hooks.errorAndThrow(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 		m[_key] = _value;
