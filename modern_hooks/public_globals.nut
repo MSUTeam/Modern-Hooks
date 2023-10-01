@@ -50,28 +50,6 @@
 	this.CSSFiles.push(_filePath);
 }
 
-::Hooks.wrapNativeEntityFunctions <- function( _modID, _src, _funcWrappers )
-{
-	local error = this.__validateWrapFunctions(_funcWrappers);
-	if (error != null)
-	{
-		::Hooks.error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
-		return;
-	}
-	this.rawHook(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
-}
-
-::Hooks.wrapLeafNativeEntityFunctions <- function( _modID, _src, _funcWrappers )
-{
-	local error = this.__validateWrapFunctions(_funcWrappers);
-	if (error != null)
-	{
-		::Hooks.error(format("Failed to validate the _funcWrappers table for %s, BB Class %s. Reason: \"%s\", check <a href=\"https://bbmodding.enduriel.com/docs/modern-hooks/basic-hooks/#wrapping-functions\">documentation</a> if in doubt.", _modID, _src, error));
-		return;
-	}
-	this.__rawHookTree(_modID, _src, this.__getNativeFunctionWrapper(_modID, _src, _funcWrappers));
-}
-
 ::Hooks.errorAndThrow <- function( _text )
 {
 	::Hooks.Popup.showRawText(_text);

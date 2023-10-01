@@ -62,63 +62,86 @@
 		_q.__Prototype.m[_key] <- _value;
 	}
 
+	function validateParameters( _q, _key, _oldInfos, _newInfos )
+	{
+		if (_oldInfos.native == true)
+			return;
+
+		local oldParams = _oldInfos.parameters;
+		local newParams = _newInfos.parameters;
+		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] == "...")
+		{
+			// one of the functions uses vargv, do not perform validation
+		}
+		else if (oldParams.len() != newParams.len())
+		{
+			::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
+		}
+	}
+
+	function setNative( _q, _key, _value )
+	{
+		local p = this.findInAncestors(_q.__Prototype, "onInit")
+		if (p == null)
+			::Hooks.errorAndThrow(format("Mod %s (%s) is using a native function wrapper on function %s in class %s which doesn't have (or inherit) an onInit function", _q.__Mod.getID(), _q.__Mod.getName(), _key, _q.__Src));
+		p = this.findInAncestors(_q.__Prototype, _key);
+		if (p != null)
+			::Hooks.error(format("Mod %s (%s) is using a native function wrapper on function %s in class %s, but that function already exists in %s which is either the target class or an ancestor", _q.__Mod.getID(), _q.__Mod.getName(), _key, _q.__Src, ::IO.scriptFilenameByHash(p.ClassNameHash)));
+
+		_q.onInit = @(__original) function() {
+			_q.__Prototype = this;
+			::Hooks.__Q.setSquirrel(_q, _key, _value, true)
+			return __original();
+		}
+	}
+
+	function setSquirrel( _q, _key, _value, _instantiated = false )
+	{
+		local ancestorCounter = 0;
+		local p = this.findInAncestors(_q.__Prototype, _key, @()++ancestorCounter);
+		if (p == null)
+			::Hooks.errorAndThrow(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(),  _key, this.buildTargetString(_q)));
+
+		local oldFunction = p[_key];
+		local oldInfos = oldFunction.getinfos();
+
+		if (_instantiated == false && ancestorCounter > 1)
+		{
+			local superName = _q.__Prototype.SuperName;
+			oldFunction = function(...) {
+				vargv.insert(0, this);
+				return this[superName][_key].acall(vargv);
+			}
+		}
+
+		local newFunction
+		try
+		{
+			if (_value.getinfos().parameters.len() == 1)
+				newFunction = _value();
+			else
+				newFunction = _value(oldFunction);
+		}
+		catch (error)
+		{
+			::Hooks.errorAndThrow(format("The overwrite attempt by mod %s (%s) for function %s in class %s failed because of error: %s", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), error));
+		}
+		this.validateParameters(_q, _key, oldInfos, newFunction.getinfos());
+
+		_q.__Prototype[_key] <- newFunction;
+	}
+
 	function set( _q, _key, _value )
 	{
 		if (typeof _value != "function")
 			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to set key %s to a value other than a function in bb class %s", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 		local wrapperParams = _value.getinfos().parameters;
 		local numParams = wrapperParams.len()
-		if (numParams != 1 && (numParams != 2 || wrapperParams[1] != "__original"))
-			::Hooks.errorAndThrow(format("Mod %s (%s) failed to hook function %s in bb class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
-
-		local ancestorCounter = 0;
-		local p = this.findInAncestors(_q.__Prototype, _key, @()++ancestorCounter);
-		if (p == null)
-			::Hooks.errorAndThrow(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(),  _key, this.buildTargetString(_q)));
-
-		local originalFunction = p[_key]
-		local oldInfos = originalFunction.getinfos();
-		local oldParams = oldInfos.parameters;
-		if (ancestorCounter > 1)
-		{
-			local superName = _q.__Prototype.SuperName;
-			originalFunction = function(...) {
-				vargv.insert(0, this);
-				return this[superName][_key].acall(vargv);
-			}
-		}
-
-		local newFunc
-		try
-		{
-			if (numParams == 1)
-				newFunc = _value();
-			else
-				newFunc = _value(originalFunction);
-		}
-		catch (error)
-		{
-			::Hooks.errorAndThrow(format("The overwrite attempt by mod %s (%s) for function %s in class %s failed because of error: %s", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), error));
-		}
-
-		local newParams = newFunc.getinfos().parameters;
-		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] == "...")
-		{
-			// one of the functions uses vargv, do not perform validation
-		}
-		else if (oldInfos.native == false)
-		{
-			if (oldParams.len() != newParams.len())
-			{
-				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
-			}
-		}
-		else
-		{
-			::Hooks.errorAndThrow(format("Mod %s (%s) seems to be targetting a native function %s in bb class %s, which shouldn't be possible, please report this", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)))
-		}
-
-		_q.__Prototype[_key] <- newFunc;
+		if (numParams == 1 || (numParams == 2 && wrapperParams[1] == "__original"))
+			return this.setSquirrel(_q, _key, _value);
+		else if (numParams == 2 && wrapperParams[1] == "__native")
+			return this.setNative(_q, _key, _value);
+		::Hooks.errorAndThrow(format("Mod %s (%s) failed to hook function %s in bb class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 	}
 
 	function setM( _q, _key, _value )
