@@ -183,10 +183,10 @@
 	m = null;
 	constructor(_mod, _src, _prototype)
 	{
+		this.m = ::Hooks.__Q.Qm(this);
 		this.__Mod = _mod;
 		this.__Src = _src;
 		this.__Prototype = _prototype;
-		this.m = ::Hooks.__Q.Qm(this);
 	}
 
 	function _set( _key, _value )
@@ -196,6 +196,8 @@
 
 	function _get( _key )
 	{
+		if (this.__Prototype == null)
+			throw null;
 		return ::Hooks.__Q.get(this, _key);
 	}
 
