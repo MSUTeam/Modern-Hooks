@@ -98,6 +98,8 @@
 
 	function require( ... )
 	{
+		if (vargv.len() == 0)
+			return;
 		if (typeof vargv[0] == "array")
 		{
 			if (vargv.len() > 1)
@@ -119,6 +121,8 @@
 
 	function conflictWith( ... )
 	{
+		if (vargv.len() == 0)
+			return;
 		if (typeof vargv[0] == "array")
 		{
 			if (vargv.len() > 1)
