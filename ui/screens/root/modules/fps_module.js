@@ -265,7 +265,6 @@ ModernHooksConnection.prototype.forceQuit = function (_quit)
 
 ModernHooksConnection.prototype.showRawText = function (_data)
 {
-	console.error(_data)
 	this.mListScrollContainer.append($('<div class="mod-raw-text">' + _data + '</div>'));
 	if (!this.isVisible())
 	{

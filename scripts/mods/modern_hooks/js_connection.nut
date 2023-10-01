@@ -50,7 +50,6 @@ this.js_connection <- {
 	function onScreenShown()
 	{
 		this.m.Visible = true;
-		::logInfo("Shown?");
 	}
 
 	function onScreenHidden()
