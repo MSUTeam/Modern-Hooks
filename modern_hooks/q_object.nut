@@ -37,7 +37,8 @@
 		if (typeof _value != "function")
 			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to set key %s to a value other than a function in bb class %s", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 		local wrapperParams = _value.getinfos().parameters;
-		if (wrapperParams.len() != 2 || wrapperParams[1] != "__original")
+		local numParams = wrapperParams.len()
+		if (numParams != 1 && (numParams != 2 || wrapperParams[1] != "__original"))
 			::Hooks.errorAndThrow(format("Mod %s (%s) failed to hook function %s in bb class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 
 		local originalFunction;
@@ -74,7 +75,10 @@
 		local newFunc
 		try
 		{
-			newFunc = _value(originalFunction);
+			if (numParams == 1)
+				newFunc = _value();
+			else
+				newFunc = _value(originalFunction);
 		}
 		catch (error)
 		{

@@ -1,7 +1,7 @@
 ::Hooks.__Mod.hook("scripts/root_state", function(q)
 {
 	local onInit = q.onInit;
-	q.onInit = @(__original) function()
+	q.onInit = @() function()
 	{
 		::Hooks.RootState = this;
 		::Hooks.JSConnection.connect();
