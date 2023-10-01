@@ -6,6 +6,42 @@
 		return format("%s (which is a descendent of hookTree target %s)", _q.__Src, _q.__Target);
 	}
 
+	function findInAncestors( _prototype, _key, _onStep = @()null )
+	{
+		local p = _prototype;
+		local found = false;
+		do
+		{
+			if (!(_key in p))
+			{
+				_onStep();
+				continue;
+			}
+			found = true;
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]))
+		return found ? p : null;
+	}
+
+	function findInAncestorsM( _prototype, _key, _onStep = @()null )
+	{
+		local p = _prototype;
+		local found = false;
+		do
+		{
+			if (!(_key in p.m))
+			{
+				_onStep();
+				continue;
+			}
+			found = true;
+			break;
+		}
+		while ("SuperName" in p && (p = p[p.SuperName]) && "m" in p);
+		return found ? p : null;
+	}
+
 	function newSlot( _q, _key, _value )
 	{
 		if (typeof _value != "function")
@@ -20,15 +56,9 @@
 
 	function newSlotM( _q, _key, _value )
 	{
-		local p = _q.__Prototype;
-		do
-		{
-			if (!(_key in p.m))
-				continue;
+		local p = this.findInAncestorsM(_q.__Prototype, _key)
+		if (p != null)
 			::Hooks.error(format("Mod %s (%s) is adding a new field %s to bb class %s, but that field already exists in %s which is either the class itself or an ancestor", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), p == _q.__Prototype ? _q.__Src : ::IO.scriptFilenameByHash(p.ClassNameHash)));
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]) && "m" in p)
 		_q.__Prototype.m[_key] <- _value;
 	}
 
@@ -41,26 +71,12 @@
 		if (numParams != 1 && (numParams != 2 || wrapperParams[1] != "__original"))
 			::Hooks.errorAndThrow(format("Mod %s (%s) failed to hook function %s in bb class %s. Use the q.<methodname> = @(__original) function (...) {...} syntax", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 
-		local originalFunction;
 		local ancestorCounter = 0;
-		local p = _q.__Prototype;
-		do
-		{
-			if (!(_key in p))
-			{
-				++ancestorCounter;
-				continue;
-			}
-			originalFunction = p[_key];
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
-
-		if (originalFunction == null)
-		{
+		local p = this.findInAncestors(_q.__Prototype, _key, @()++ancestorCounter);
+		if (p == null)
 			::Hooks.errorAndThrow(format("Mod %s (%s) failed to set function %s in bb class %s: there is no function to set in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(),  _key, this.buildTargetString(_q)));
-			return;
-		}
+
+		local originalFunction = p[_key]
 		local oldInfos = originalFunction.getinfos();
 		local oldParams = oldInfos.parameters;
 		if (ancestorCounter > 1)
@@ -107,61 +123,28 @@
 
 	function setM( _q, _key, _value )
 	{
-		local m = null;
-		local p = _q.__Prototype;
-		do
-		{
-			if (!(_key in p.m))
-				continue;
-			m = p.m;
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
-		if (m == null)
+		local p = this.findInAncestorsM(_q.__Prototype, _key);
+		if (p == null)
 			::Hooks.errorAndThrow(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
-		m[_key] = _value;
+		p.m[_key] = _value;
 	}
 
 	function get( _q, _key )
 	{
-		local value;
-		local exists = false;
-		local p = _q.__Prototype;
-		if ("SuperName" in p && _key == p.SuperName)
+		if ("SuperName" in _q.__Prototype && _key == _q.__Prototype.SuperName)
 			::Hooks.errorAndThrow("Modern hooks disallows getting the parent prototype from a basic hook"); // todo improve error
-		do
-		{
-			if (_key in p)
-			{
-				value = p[_key];
-				exists = true;
-				break;
-			}
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
-
-		if (exists)
-			return value;
-		throw null;
+		local p = this.findInAncestors(_q.__Prototype, _key);
+		if (p == null)
+			throw null;
+		return p[_key];
 	}
 
 	function getM( _q, _key )
 	{
-		local value;
-		local found = false;
-		local p = _q.__Prototype;
-		do
-		{
-			if (!(_key in p.m)) // state.nut
-				continue;
-			found = true;
-			value = p.m[_key];
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]) && ("m" in p))
-		if (!found)
+		local p = this.findInAncestorsM(_q.__Prototype, _key);
+		if (p == null)
 			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to get field %s for bb class %s, but that field doesn't exist in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(), _key, _q.__Src));
-		return value;
+		return p.m[_key];
 	}
 
 	function contains( _table, _key )
@@ -212,17 +195,7 @@
 	{
 		if (_checkAncestors == false)
 			return _key in this.__Prototype;
-		local contains = false;
-		local p = this.__Prototype;
-		do
-		{
-			if (!(_key in p))
-				continue;
-			contains = true;
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
-		return contains;
+		return ::Hooks.__Q.findInAncestors(this.__Prototype, _key) != null;
 	}
 },
 
@@ -270,17 +243,7 @@
 	function contains( _key, _checkAncestors = false )
 	{
 		if (_checkAncestors == false)
-			return _key in this.__Prototype.m;
-		local contains = false;
-		local p = this.__Prototype;
-		do
-		{
-			if (!(_key in p.m))
-				continue;
-			contains = true;
-			break;
-		}
-		while ("SuperName" in p && (p = p[p.SuperName]))
-		return contains;
+			return _key in this.Q.__Prototype.m;
+		return ::Hooks.__Q.findInAncestorsM(this.Q.__Prototype, _key) != null;
 	}
 }
