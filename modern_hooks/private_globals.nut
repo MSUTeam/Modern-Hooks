@@ -177,24 +177,18 @@
 	this.__registerForAncestorTreeHooks(_prototype, _src);
 }
 
-::Hooks.__initClass <- function( _src, _modID = null )
+::Hooks.__initClass <- function( _src )
 {
 	if (!(_src in this.BBClass))
 		this.BBClass[_src] <- {
-			Mods = {},
+			TreeHooks = [],
+			RawHooks = [],
+			// MetaHooks = [] to do later
 			Descendants = [],
 			Prototype = null,
 			Processed = false
 		};
-	if (_modID != null && !(_modID in this.BBClass[_src].Mods))
-		this.BBClass[_src].Mods[_modID] <- {
-			RawHooks = [],
-			TreeHooks = [],
-			// MetaHooks = [] to do later
-		};
 }
-
-
 
 ::Hooks.__registerForAncestorTreeHooks <- function( _prototype, _src )
 {
@@ -202,7 +196,7 @@
 	local p = _prototype;
 	do
 	{
-		if (src in this.BBClass && this.BBClass[src].Mods.len() != 0)
+		if (src in this.BBClass && this.BBClass[src].TreeHooks.len() != 0)
 			this.BBClass[src].Descendants.push(_prototype);
 	}
 	while ("SuperName" in p && (p = p[p.SuperName]) && (src = ::IO.scriptFilenameByHash(p.ClassNameHash)))
@@ -261,8 +255,11 @@
 
 ::Hooks.__rawHook <- function( _mod, _src, _func )
 {
-	this.__initClass(_src, _mod.getID());
-	this.BBClass[_src].Mods[_mod.getID()].RawHooks.push(_func);
+	this.__initClass(_src);
+	this.BBClass[_src].RawHooks.push({
+		Mod = _mod,
+		hook = _func
+	});
 }
 
 ::Hooks.__hook <- function( _mod, _src, _func )
@@ -277,8 +274,11 @@
 
 ::Hooks.__rawHookTree <- function( _mod, _src, _func )
 {
-	this.__initClass(_src, _mod.getID());
-	this.BBClass[_src].Mods[_mod.getID()].TreeHooks.push(_func);
+	this.__initClass(_src);
+	this.BBClass[_src].TreeHooks.push({
+		Mod = _mod,
+		hook = _func
+	});
 }
 
 ::Hooks.__hookTree <- function( _mod, _src, _func )
@@ -295,18 +295,17 @@
 ::Hooks.__processRawHooks <- function( _src )
 {
 	local p = this.BBClass[_src].Prototype;
-	foreach (mod in this.BBClass[_src].Mods)
-		foreach (hook in mod.RawHooks)
+	foreach (hookInfo in this.BBClass[_src].RawHooks)
+	{
+		try
 		{
-			try
-			{
-				hook(p);
-			}
-			catch (error)
-			{
-				::Hooks.errorAndQuit(error);
-			}
+			hookInfo.hook(p);
 		}
+		catch (error)
+		{
+			::Hooks.errorAndQuit(error);
+		}
+	}
 	this.BBClass[_src].Processed = true;
 }
 
@@ -327,17 +326,14 @@
 
 		// leaf hook logic
 		foreach (prototype in bbclass.Descendants)
-			foreach (mod in bbclass.Mods)
-				foreach (hook in mod.TreeHooks)
+			foreach (hookInfo in bbclass.TreeHooks)
+				try
 				{
-					try
-					{
-						hook(prototype)
-					}
-					catch (error)
-					{
-						::Hooks.errorAndQuit(error);
-					}
+					hookInfo.hook(prototype);
+				}
+				catch (error)
+				{
+					::Hooks.errorAndQuit(error);
 				}
 	}
 }
