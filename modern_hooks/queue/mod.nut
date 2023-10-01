@@ -98,6 +98,13 @@
 
 	function require( ... )
 	{
+		if (typeof vargv[0] == "array")
+		{
+			if (vargv.len() > 1)
+				::Hooks.errorAndThrow("cannot pass more than one argument if the first argument is an array");
+			vargv = vargv[0];
+		}
+
 		foreach (modInfo in vargv)
 		{
 			local parsed = this.__parseCompatibilityModInfo(modInfo);
@@ -112,6 +119,13 @@
 
 	function conflictWith( ... )
 	{
+		if (typeof vargv[0] == "array")
+		{
+			if (vargv.len() > 1)
+				::Hooks.errorAndThrow("cannot pass more than one argument if the first argument is an array");
+			vargv = vargv[0];
+		}
+
 		foreach (modInfo in vargv)
 		{
 			local parsed = this.__parseCompatibilityModInfo(modInfo);
@@ -131,8 +145,9 @@
 			bucket = vargv.pop();
 		if (typeof vargv[vargv.len()-1] != "function")
 			::Hooks.errorAndThrow(format("Mod %s (%s) did not pass a function as the last parameter for queue", this.getID(), this.getName()));
+		local queueOrderInfo = typeof vargv[0] == "array" ? vargv[0] : vargv;
 		local func = vargv.pop();
-		this.QueuedFunctions.push(::Hooks.QueuedFunction(this, func, vargv, bucket));
+		this.QueuedFunctions.push(::Hooks.QueuedFunction(this, func, queueOrderInfo, bucket));
 	}
 
 	function hook( _src, _func )
