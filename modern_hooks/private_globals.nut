@@ -117,8 +117,7 @@
 
 ::Hooks.__runQueue <- function()
 {
-	if (!this.__validateModCompatibility())
-		return;
+	this.__validateModCompatibility();
 
 	local buckets = {}; // I hate how I've had to do these buckets without MSU enums
 	foreach (mod in this.getMods())
