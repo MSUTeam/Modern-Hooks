@@ -69,9 +69,11 @@
 
 		local oldParams = _oldInfos.parameters;
 		local newParams = _newInfos.parameters;
-		if (newParams[newParams.len()-1] == "..." || oldParams[oldParams.len()-1] == "...")
+		// For vargv-using functions we only want to error if the new function doesn't have vargv
+		// For other changes to such functions' parameters, there are edge cases where nothing breaks
+		if (oldParams[oldParams.len()-1] == "..." && newParams[newParams.len()-1] != "...")
 		{
-			// one of the functions uses vargv, do not perform validation
+			::Hooks.error(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv using function", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 		}
 		else if (oldParams.len() != newParams.len())
 		{
