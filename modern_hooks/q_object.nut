@@ -69,11 +69,22 @@
 
 		local oldParams = _oldInfos.parameters;
 		local newParams = _newInfos.parameters;
-		// For vargv-using functions we only want to error if the new function doesn't have vargv
-		// For other changes to such functions' parameters, there are edge cases where nothing breaks
-		if (oldParams[oldParams.len()-1] == "..." && newParams[newParams.len()-1] != "...")
+		local oldHasVargv = oldParams[oldParams.len()-1] == "...";
+		local newHasVargv = newParams[newParams.len()-1] == "...";
+		if (oldHasVargv || newHasVargv)
 		{
-			::Hooks.error(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv using function", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
+			// For vargv-using functions we only want to error if the number of non-vargv
+			// parameters is different between the old and new functions
+			if (!oldHasVargv && newHasVargv)
+			{
+				if (newParams.len() - 2 > oldParams.len())
+					::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with a vargv-using function but is increasing the number of non-vargv parameters from %i to %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len() - 1, newParams.len() - 2));
+			}
+			else if (oldHasVargv && !newHasVargv)
+			{
+				if (oldParams.len() - 2 > newParams.len())
+					::Hooks.error(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with an increased number of non-vargv parameters (%i to %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len() - 2, newParams.len() - 1));
+			}
 		}
 		else if (oldParams.len() != newParams.len())
 		{
