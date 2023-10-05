@@ -118,9 +118,9 @@
 			}
 			else // function with vargv cannot have defparams
 			{
-				foreach (i, defparam in info.defparams)
+				foreach (i, defparam in oldInfos.defparams)
 				{
-					declarationParams[declarationParams.len() - info.defparams.len() + i] += " = " + defparam;
+					declarationParams[declarationParams.len() - oldInfos.defparams.len() + i] += " = " + defparam;
 				}
 			}
 
