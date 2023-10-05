@@ -182,6 +182,7 @@
 		this.BBClass[_src] <- {
 			TreeHooks = [],
 			RawHooks = [],
+			NativeHooks = [],
 			// MetaHooks = [] to do later
 			Descendants = [],
 			Prototype = null,
@@ -246,6 +247,10 @@
 		{
 			::Hooks.errorAndQuit(error);
 		}
+	}
+	foreach (hook in this.BBClass[_src].NativeHooks)
+	{
+		hook();
 	}
 	this.BBClass[_src].Processed = true;
 }
