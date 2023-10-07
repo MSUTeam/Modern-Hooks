@@ -103,15 +103,7 @@
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
 		::Hooks.inform(format("Executing queued function [emph]%i[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), mod.getName(), mod.getID(), versionString));
-		try
-		{
-			queuedFunction.getFunction()();
-		}
-		catch (error)
-		{
-			::Hooks.errorAndQuit(error);
-		}
-
+		queuedFunction.getFunction()();
 	}
 }
 
@@ -239,14 +231,7 @@
 	local p = this.BBClass[_src].Prototype;
 	foreach (hookInfo in this.BBClass[_src].RawHooks)
 	{
-		try
-		{
-			hookInfo.hook(p);
-		}
-		catch (error)
-		{
-			::Hooks.errorAndQuit(error);
-		}
+		hookInfo.hook(p);
 	}
 	foreach (hook in this.BBClass[_src].NativeHooks)
 	{
@@ -273,14 +258,7 @@
 		// leaf hook logic
 		foreach (prototype in bbclass.Descendants)
 			foreach (hookInfo in bbclass.TreeHooks)
-				try
-				{
-					hookInfo.hook(prototype);
-				}
-				catch (error)
-				{
-					::Hooks.errorAndQuit(error);
-				}
+				hookInfo.hook(prototype);
 	}
 }
 
