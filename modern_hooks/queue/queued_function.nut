@@ -28,10 +28,19 @@
 	{
 		foreach (string in _data)
 		{
-			if (string[0] == 60)
-				this.LoadBefore.push(string.slice(1));
-			if (string[0] == 62)
-				this.LoadAfter.push(string.slice(1));
+			switch (string[0])
+			{
+				case 60:
+					this.LoadBefore.push(string.slice(1));
+					break;
+
+				case 62:
+					this.LoadAfter.push(string.slice(1));
+					break;
+
+				default:
+					throw "load order information must start with < or > followed by the mod id";
+			}
 		}
 	}
 
