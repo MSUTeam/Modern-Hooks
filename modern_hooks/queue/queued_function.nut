@@ -1,5 +1,6 @@
 ::Hooks.QueuedFunction <- class
 {
+	ID = null;
 	LoadBefore = null;
 	LoadAfter = null;
 	Function = null;
@@ -17,6 +18,7 @@
 		this.Bucket = _bucket;
 		if (_loadOrderData != null)
 			this.setLoadOrderData(_loadOrderData);
+		this.setupID();
 	}
 
 	function setFunction( _function )
@@ -32,6 +34,34 @@
 				this.LoadBefore.push(string.slice(1));
 			if (string[0] == 62)
 				this.LoadAfter.push(string.slice(1));
+		}
+	}
+
+	function getID()
+	{
+		return this.ID;
+	}
+
+	function setupID()
+	{
+		this.ID = this.getModID();
+
+		if (this.LoadBefore.len() != 0 || this.LoadAfter.len() != 0)
+		{
+			this.ID += " ["
+			if (this.LoadBefore.len() != 0)
+			{
+				this.ID += "Before: " + this.LoadBefore.reduce(@(a, b) a + ", " + b);
+				if (this.LoadAfter.len() != 0)
+				{
+					this.ID += " | ";
+				}
+			}
+			if (this.LoadAfter.len() != 0)
+			{
+				this.ID += "After: " + this.LoadAfter.reduce(@(a, b) a + ", " + b);
+			}
+			this.ID += "]";
 		}
 	}
 
@@ -68,5 +98,32 @@
 	function getMod()
 	{
 		return this.Mod;
+	}
+
+	function loadsBefore( _qFunc )
+	{
+		if (this.getLoadBefore().find(_qFunc.getModID()) != null)
+		{
+			foreach (id in this.getLoadAfter())
+			{
+				if (_qFunc.getLoadBefore().find(id) != null)
+					return false;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	function loadsAfter( _qFunc )
+	{
+		if (this.getLoadBefore().find(_qFunc.getModID()) != null)
+			return false;
+
+		if (this.getLoadAfter().find(_qFunc.getModID()) != null)
+			return true;
+
+		return false;
 	}
 }

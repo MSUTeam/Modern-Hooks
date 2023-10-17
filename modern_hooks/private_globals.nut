@@ -75,25 +75,29 @@
 	{
 		::Hooks.errorAndThrow(format("Mod %s (%s) version %s is trying to register twice", _modID, _modName, _version.tostring()))
 	}
-	this.Mods[_modID] <- ::Hooks.SQClass.Mod(_modID, _version, _modName, _metaData);
+	local mod = ::Hooks.SQClass.Mod(_modID, _version, _modName, _metaData);
+	this.Mods[_modID] <- mod;
+	this.SortedMods.push(mod);
 	::Hooks.inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
 	return this.Mods[_modID];
 }
 
 ::Hooks.__sortQueue <- function( _queuedFunctions )
 {
-	local graph = ::Hooks.QueueGraph();
-	foreach (func in _queuedFunctions)
-	{
-		foreach (modID in func.getLoadBefore())
-			graph.addEdge(modID + "_end", func);
-		foreach (modID in func.getLoadAfter())
-			graph.addEdge(func, modID + "_start");
-		graph.addEdge(func.getModID() + "_start", func)
-		graph.addEdge(func, func.getModID() + "_end")
-	};
-	local sortedNodes = graph.topologicalSort();
-	return sortedNodes.filter(@(_i, _e) _e instanceof ::Hooks.QueuedFunction);
+	return ::Hooks.ModHooksQueueGraph(_queuedFunctions).getSorted();
+
+	// local graph = ::Hooks.QueueGraph();
+	// foreach (func in _queuedFunctions)
+	// {
+	// 	foreach (modID in func.getLoadBefore())
+	// 		graph.addEdge(modID + "_end", func);
+	// 	foreach (modID in func.getLoadAfter())
+	// 		graph.addEdge(func, modID + "_start");
+	// 	graph.addEdge(func.getModID() + "_start", func)
+	// 	graph.addEdge(func, func.getModID() + "_end")
+	// };
+	// local sortedNodes = graph.topologicalSort();
+	// return sortedNodes.filter(@(_i, _e) _e instanceof ::Hooks.QueuedFunction);
 }
 
 ::Hooks.__executeQueuedFunctions <- function( _queuedFunctions )
@@ -102,7 +106,7 @@
 	{
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
-		::Hooks.inform(format("Executing queued function [emph]%i[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), mod.getName(), mod.getID(), versionString));
+		::Hooks.inform(format("Executing queued function [emph]%s[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getID(), mod.getName(), mod.getID(), versionString));
 		queuedFunction.getFunction()();
 	}
 }
@@ -112,7 +116,7 @@
 	this.__validateModCompatibility();
 
 	local buckets = {}; // I hate how I've had to do these buckets without MSU enums
-	foreach (mod in this.getMods())
+	foreach (mod in this.SortedMods)
 	{
 		foreach (func in mod.getQueuedFunctions())
 		{
