@@ -52,7 +52,10 @@ local function inverter(_operator)
 
 	// parse expression using mod_hooks function
 	local match = function(s,m,i) {
-		return m[i].end > 0 && m[i].begin < s.len() ? s.slice(m[i].begin, m[i].end) : null
+		local m = m[i];
+		local len = s.len();
+		local found = m.begin >= 0 && m.end > 0 && m.begin < len && m.end <= len;
+		return found ? s.slice(m.begin, m.end) : null
 	};
 	if (expr == "" || expr == null)
 		expr = []
