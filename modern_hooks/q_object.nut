@@ -62,6 +62,20 @@
 		_q.__Prototype.m[_key] <- _value;
 	}
 
+	function delSlot( _q, _key )
+	{
+		if (!(_key in _q.__Prototype))
+			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to remove function '%s' from %s, but this function does not exist in this class.", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)))
+		return delete _q.__Prototype[_key];
+	}
+
+	function delSlotM( _q, _key )
+	{
+		if (!(_key in _q.__Prototype.m))
+			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to remove field '%s' from %s, but this field does not exist in this class.", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)))
+		return delete _q.__Prototype.m[_key];
+	}
+
 	function validateParameters( _q, _key, _oldInfos, _newInfos )
 	{
 		if (_oldInfos.native == true)
@@ -226,7 +240,7 @@
 
 	function _delslot( _key )
 	{
-		// TODO
+		return ::Hooks.__Q.delSlot(this, _key)
 	}
 
 	function _nexti( _prev )
@@ -275,7 +289,7 @@
 
 	function _delslot( _key )
 	{
-		// TODO
+		return ::Hooks.__Q.delSlotM(this.Q, _key)
 	}
 
 	function _nexti( _prev )
