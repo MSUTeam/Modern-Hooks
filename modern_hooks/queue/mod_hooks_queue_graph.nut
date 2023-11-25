@@ -1,3 +1,4 @@
+// Sorts mods using the same algorithm as Adam's mod hooks
 ::Hooks.ModHooksQueueGraph <- class
 {
 	Deps = null;
