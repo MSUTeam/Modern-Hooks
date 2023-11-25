@@ -44,6 +44,30 @@
 		}
 	}
 
+	function getDetailsString()
+	{
+		local ret = "";
+
+		if (this.LoadBefore.len() != 0 || this.LoadAfter.len() != 0)
+		{
+			ret += " ["
+			if (this.LoadBefore.len() != 0)
+			{
+				ret += "Before: " + this.LoadBefore.reduce(@(a, b) a + ", " + b);
+				if (this.LoadAfter.len() != 0)
+				{
+					ret += " | ";
+				}
+			}
+			if (this.LoadAfter.len() != 0)
+			{
+				ret += "After: " + this.LoadAfter.reduce(@(a, b) a + ", " + b);
+			}
+			ret += "]";
+		}
+		return ret;
+	}
+
 	function getFunction()
 	{
 		return this.Function;
