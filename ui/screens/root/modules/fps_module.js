@@ -112,6 +112,8 @@ RootScreenFPSModule.prototype.setFPS = function (_value)
 
 var Hooks = {
 	registerScreens : registerScreens,
+	screenInit : false,
+	errorMsg : null
 }
 
 // Define ModernHooksConnection
@@ -135,6 +137,9 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 	var self = this;
 	SQ.call(this.mSQHandle, "queryData", null, function (_data)
 	{
+		Hooks.screenInit = true;
+		if (Hooks.errorMsg != null)
+			Hooks.errorMsg.remove();
 		var jsFiles = _data.JS;
 		for (var i = 0; i < jsFiles.length-1; ++i) // the last one has an onload action appended to it
 		{
@@ -295,4 +300,22 @@ $(document).ready(function(){
 	registerScreen("RootScreen", new RootScreen()); // RootScreen needs to be init, main menu screen never shows otherwise
 	engine.call("registrationFinished");
 })
+
+setTimeout(function(){
+	if (Hooks.screenInit)
+		return;
+	Hooks.errorMsg = $('<div id="hooksErrorMessage">If you are seeing this screen and the game is not loading, that probably means something went wrong when loading your mods.<br><br> For more details, check your log; found in "Documents/Battle Brothers/log.html".<br><br> If you plan to look for help when debugging, be sure to provide the ENTIRE log.html file to those you ask for help.</div>');
+	Hooks.errorMsg.css({
+		'position' : 'absolute',
+		'top' : '50%',
+		'left' : '50%',
+		'transform' : 'translate(-50%, -50%)',
+		'color' : 'white',
+		'width' : '80%',
+		'text-align' : 'center',
+		'font-size' : '72px',
+		'font-family' : 'FreeUniversal-Regular'
+	});
+	$('.root-screen').append(Hooks.errorMsg);
+}, 500);
 
