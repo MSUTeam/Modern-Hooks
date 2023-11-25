@@ -76,6 +76,25 @@
 		return delete _q.__Prototype.m[_key];
 	}
 
+	function nexti( _qOrQm, _table, _prev )
+	{
+		if (_prev == null)
+		{
+			_qOrQm.__NextIArray = array(_table.len());
+			local i = 0;
+			foreach (key, value in _table)
+				_qOrQm.__NextIArray[i++] = key;
+			_qOrQm.__NextICache = 0;
+		}
+		if (_qOrQm.__NextICache == _qOrQm.__NextIArray.len())
+		{
+			_qOrQm.__NextIArray = null;
+			_qOrQm.__NextICache = null;
+			return null;
+		}
+		return _qOrQm.__NextIArray[_qOrQm.__NextICache++];
+	}
+
 	function validateParameters( _q, _key, _oldInfos, _newInfos )
 	{
 		if (_oldInfos.native == true)
@@ -212,6 +231,8 @@
 	__Src = null;
 	__Prototype = null;
 	__Mod = null;
+	__NextIArray = null;
+	__NextICache = null;
 	m = null;
 	constructor(_mod, _src, _prototype)
 	{
@@ -245,7 +266,7 @@
 
 	function _nexti( _prev )
 	{
-		// TODO
+		return ::Hooks.__Q.nexti(this, this.__Prototype, _prev);
 	}
 
 	function contains( _key, _checkAncestors = false )
@@ -267,6 +288,9 @@
 
 ::Hooks.__Q.Qm <- class {
 	Q = null;
+	__NextIArray = null;
+	__NextICache = null;
+
 	constructor(_Q)
 	{
 		this.Q = _Q.weakref();
@@ -294,7 +318,7 @@
 
 	function _nexti( _prev )
 	{
-		// TODO
+		return ::Hooks.__Q.nexti(this, this.Q.__Prototype.m, _prev);
 	}
 
 	function contains( _key, _checkAncestors = false )
