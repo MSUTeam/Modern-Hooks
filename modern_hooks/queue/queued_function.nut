@@ -1,6 +1,5 @@
 ::Hooks.QueuedFunction <- class
 {
-	ID = null;
 	LoadBefore = null;
 	LoadAfter = null;
 	Function = null;
@@ -18,7 +17,6 @@
 		this.Bucket = _bucket;
 		if (_loadOrderData != null)
 			this.setLoadOrderData(_loadOrderData);
-		this.setupID();
 	}
 
 	function setFunction( _function )
@@ -37,32 +35,28 @@
 		}
 	}
 
-	function getID()
+	function getDetailsString()
 	{
-		return this.ID;
-	}
-
-	function setupID()
-	{
-		this.ID = this.getModID();
+		local ret = "";
 
 		if (this.LoadBefore.len() != 0 || this.LoadAfter.len() != 0)
 		{
-			this.ID += " ["
+			ret += " ["
 			if (this.LoadBefore.len() != 0)
 			{
-				this.ID += "Before: " + this.LoadBefore.reduce(@(a, b) a + ", " + b);
+				ret += "Before: " + this.LoadBefore.reduce(@(a, b) a + ", " + b);
 				if (this.LoadAfter.len() != 0)
 				{
-					this.ID += " | ";
+					ret += " | ";
 				}
 			}
 			if (this.LoadAfter.len() != 0)
 			{
-				this.ID += "After: " + this.LoadAfter.reduce(@(a, b) a + ", " + b);
+				ret += "After: " + this.LoadAfter.reduce(@(a, b) a + ", " + b);
 			}
-			this.ID += "]";
+			ret += "]";
 		}
+		return ret;
 	}
 
 	function getFunction()
@@ -109,7 +103,6 @@
 				if (_qFunc.getLoadBefore().find(id) != null)
 					return false;
 			}
-
 			return true;
 		}
 

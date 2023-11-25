@@ -106,7 +106,7 @@
 	{
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
-		::Hooks.inform(format("Executing queued function [emph]%s[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getID(), mod.getName(), mod.getID(), versionString));
+		::Hooks.inform(format("Executing queued function [emph]%i %s[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), queuedFunction.getDetailsString(), mod.getName(), mod.getID(), versionString));
 		queuedFunction.getFunction()();
 	}
 }
