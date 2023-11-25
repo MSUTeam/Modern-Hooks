@@ -43,11 +43,11 @@
 		{
 			case ::Hooks.CompatibilityCheckResult.ModMissing:
 				local name = error.Target.getModID() in ::Hooks.CachedModNames ? ::Hooks.CachedModNames[error.Target.getModID()] : error.Target.getModName();
-				::Hooks.error(format("%s (%s) requires %s (%s)", error.Source.getID(), error.Source.getName(), error.Target.getModID(), name));
+				::Hooks.error(format("%s (%s) requires %s (%s)%s", error.Source.getID(), error.Source.getName(), error.Target.getModID(), name, error.Target.getFormattedDetails()));
 				break;
 			case ::Hooks.CompatibilityCheckResult.ModPresent:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				::Hooks.error(format("%s (%s) is incompatible with %s (%s)", error.Source.getID(), error.Source.getName(), mod.getID(), mod.getName()));
+				::Hooks.error(format("%s (%s) is incompatible with %s (%s)%s", error.Source.getID(), error.Source.getName(), mod.getID(), mod.getName(), error.Target.getFormattedDetails()));
 				break;
 			case ::Hooks.CompatibilityCheckResult.TooSmall:
 				local mod = ::Hooks.getMod(error.Target.getModID());

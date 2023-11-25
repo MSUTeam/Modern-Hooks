@@ -87,7 +87,8 @@
 			ID = null,
 			Version = null,
 			Operator = null,
-			Name = null
+			Name = null,
+			Details = null
 		};
 
 		local capture = ::Hooks.__ModIDRegex.capture(modInfo);
@@ -111,6 +112,14 @@
 			ret.Name = ::Hooks.__msu_regexMatch(capture, modInfo, 1);
 			modInfo = strip(modInfo.slice(capture[0].end - capture[0].begin));
 		}
+
+		capture = ::Hooks.__ModDetailsRegex.capture(modInfo);
+		if (capture != null)
+		{
+			ret.Details = ::Hooks.__msu_regexMatch(capture, modInfo, 1);
+			modInfo = strip(modInfo.slice(capture[0].end - capture[0].begin));
+		}
+
 		if (modInfo.len() != 0)
 			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s)", _modInfo, this.getID(), this.getName()));
 		return ret;
@@ -135,6 +144,7 @@
 				::Hooks.CompatibilityType.Requirement,
 				parsed.Version,
 				parsed.Operator,
+				parsed.Details,
 				parsed.Name));
 		}
 	}
@@ -158,6 +168,7 @@
 				::Hooks.CompatibilityType.Incompatibility,
 				parsed.Version,
 				parsed.Operator,
+				parsed.Details,
 				parsed.Name));
 		}
 	}

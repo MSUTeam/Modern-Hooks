@@ -14,8 +14,9 @@ local function msu_String_isInteger( _string )
 	Operator = null;
 	CompatibilityType = null;
 	ModName = null;
+	Details = null;
 
-	constructor( _modID, _compatibilityType, _version, _operator, _modName = null )
+	constructor( _modID, _compatibilityType, _version, _operator, _details = null, _modName = null )
 	{
 		if (_modName == null)
 			_modName = _modID;
@@ -29,6 +30,7 @@ local function msu_String_isInteger( _string )
 			this.Version = _version.tofloat(); // purely for backwards compatibility with Adam's Hooks
 		this.Operator = _operator;
 		this.ModName = _modName;
+		this.Details = _details;
 	}
 
 	function getModID()
@@ -39,6 +41,16 @@ local function msu_String_isInteger( _string )
 	function getModName()
 	{
 		return this.ModName;
+	}
+
+	function getDetails()
+	{
+		return this.Details;
+	}
+
+	function getFormattedDetails()
+	{
+		return this.getDetails() == null ? "" : ": " + this.getDetails();
 	}
 
 	function __processCmpResult( _cmpResult )
@@ -98,6 +110,8 @@ local function msu_String_isInteger( _string )
 				break;
 		}
 		ret += typeof this.Version == "float" ? this.Version.tostring() : this.Version.getVersionString();
+		ret += this.getFormattedDetails();
+
 		return ret;
 	}
 

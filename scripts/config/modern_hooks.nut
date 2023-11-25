@@ -38,6 +38,7 @@
 	__ModIDRegex = regexp(@"^\w+"),
 	__ModOperatorAndVersionRegex = regexp(@"^((?:!|>|<|=)=?) ([^ ]+)"),
 	__ModNameRegex = regexp(@"^\((.+)\)"),
+	__ModDetailsRegex = regexp(@"^\[(.+)\]"),
 	__IntFloatRegex = regexp("^\\d+(?:\\.\\d+)?$"),
 	__TacticalEntityPath = "scripts/entity/tactical/entity",
 	__WorldEntityPath = "scripts/entity/tactical/entity"
