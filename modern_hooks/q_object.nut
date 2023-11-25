@@ -218,9 +218,10 @@
 
 	function get( _q, _key )
 	{
+		// if ("SuperName" in _q.__Prototype && _key == _q.__Prototype.SuperName) implement once people have poretd
+		// 	return ::Hooks.__Q.Q(_q.__Mod, _q.__Src, _q.__Prototype[_q.SuperName]);
 		if ("SuperName" in _q.__Prototype && _key == _q.__Prototype.SuperName)
-			::Hooks.errorAndThrow("Modern hooks disallows getting the parent prototype from a basic hook"); // todo improve error
-		local p = this.findInAncestors(_q.__Prototype, _key);
+			::Hooks.errorAndThrow(format("Mod %s (%s) tried to climb the inheritance chain for bb class %s. This is no longer necessary when using Modern Hooks. Apply hooks directly to the current class instead, and it will automatically climb if necessary.", _q.Mod.getID(), _q.Mod.getName(), _q.__Src));		local p = this.findInAncestors(_q.__Prototype, _key);
 		if (p == null)
 			throw null;
 		return p[_key];
