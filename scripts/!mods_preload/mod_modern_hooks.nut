@@ -18,12 +18,17 @@ foreach (key, value in ::Const.DLC)
 }
 
 ::Hooks.__Mod <- ::Hooks.register(::Hooks.ID, ::Hooks.Version, ::Hooks.Name);
-::Hooks.__Mod.queue(function (){
-	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/last"))
+::Hooks.__Mod.queue(function() {
+	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/first"))
 		::include(file);
-}, ::Hooks.QueueBucket.Last);
+}, ::Hooks.QueueBucket.First);
 
 ::Hooks.__Mod.queue(function() {
 	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/normal"))
 		::include(file);
-})
+});
+
+::Hooks.__Mod.queue(function (){
+	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/last"))
+		::include(file);
+}, ::Hooks.QueueBucket.Last);
