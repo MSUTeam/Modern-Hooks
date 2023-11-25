@@ -46,15 +46,6 @@
 		}
 	}
 
-	function getQueuedFunction( _id )
-	{
-		foreach (func in this.QueuedFunctions)
-		{
-			if (func.getID() == _id)
-				return func;
-		}
-	}
-
 	function getQueuedFunctionsByModID( _modID )
 	{
 		local ret = [];
