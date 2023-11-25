@@ -82,17 +82,37 @@
 
 	function __parseCompatibilityModInfo( _modInfo )
 	{
-		local capture = ::Hooks.__CompatibilityRegex.capture(_modInfo);
-		if (capture == null)
-			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s)", _modInfo, this.getID(), this.getName()));
+		local modInfo = strip(_modInfo);
 		local ret = {
-			ID = ::Hooks.__msu_regexMatch(capture, _modInfo, 1),
-			Version = ::Hooks.__msu_regexMatch(capture, _modInfo, 3),
+			ID = null,
+			Version = null,
 			Operator = null,
-			Name = ::Hooks.__msu_regexMatch(capture, _modInfo, 4)
+			Name = null
+		};
+
+		local capture = ::Hooks.__ModIDRegex.capture(modInfo);
+		if (capture == null)
+			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): mod name wasn't formatted correctly", _modInfo, this.getID(), this.getName()));
+		ret.ID = ::Hooks.__msu_regexMatch(capture, modInfo, 0);
+		modInfo = strip(modInfo.slice(capture[0].end - capture[0].begin));
+
+		capture = ::Hooks.__ModOperatorAndVersionRegex.capture(modInfo);
+		if (capture != null)
+		{
+			local operatorString = ::Hooks.__msu_regexMatch(capture, modInfo, 1);
+			ret.Operator = this.__parseOperatorString(operatorString);
+			ret.Version = ::Hooks.__msu_regexMatch(capture, modInfo, 2);
+			modInfo = strip(modInfo.slice(capture[0].end - capture[0].begin));
 		}
-		if (ret.Version != null)
-			ret.Operator = this.__parseOperatorString(::Hooks.__msu_regexMatch(capture, _modInfo, 2))
+
+		capture = ::Hooks.__ModNameRegex.capture(modInfo);
+		if (capture != null)
+		{
+			ret.Name = ::Hooks.__msu_regexMatch(capture, modInfo, 1);
+			modInfo = strip(modInfo.slice(capture[0].end - capture[0].begin));
+		}
+		if (modInfo.len() != 0)
+			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s)", _modInfo, this.getID(), this.getName()));
 		return ret;
 	}
 
