@@ -23,11 +23,6 @@ foreach (key, value in ::Const.DLC)
 		::include(file);
 }, ::Hooks.QueueBucket.First);
 
-::Hooks.__Mod.queue(function() {
-	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/normal"))
-		::include(file);
-});
-
 ::Hooks.__Mod.queue(function (){
 	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/last"))
 		::include(file);
