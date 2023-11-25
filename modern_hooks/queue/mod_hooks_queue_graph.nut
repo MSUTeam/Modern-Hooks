@@ -48,43 +48,28 @@
 
 	function getQueuedFunctionsByModID( _modID )
 	{
-		local ret = [];
-		foreach (func in this.QueuedFunctions)
-		{
-			if (func.getModID() == _modID)
-				ret.push(func);
-		}
-		return ret;
+		return this.QueuedFunctions.filter(@(_i, _func) _func.getModID() == _modID);
 	}
 
 	function getSorted()
 	{
 		local ret = [];
 		foreach (height in this.Sets)
-		{
-			foreach (qFunc in height)
-			{
-				ret.push(qFunc);
-			}
-		}
+			ret.extend(height);
 		return ret;
 	}
 
 	function visit( _queuedFunction, _chain )
 	{
-		_chain.push(_queuedFunction.getID());
+		_chain.push(_queuedFunction);
 		local height;
 		if (_queuedFunction in this.Heights)
 		{
 			height = this.Heights[_queuedFunction];
 			if (height == 0)
 			{
-				local modList = "";
-				for (local i = 0; i < _chain.len(); ++i)
-				{
-					modList = (i == 0 ? _chain[i] : modList + " -> " + _chain[i]);
-				}
-				throw "Dependency conflict involving mod(s) " + modList + ".";
+				local mods = _chain.map(@(_a) _a.getModID() + " function " + _a.getFunctionID()).reduce(@(_a, _b) _a + " -> " + _b);
+				::Hooks.errorAndThrow("Dependency conflict involving mod(s) " + mods + ".");
 			}
 		}
 		else
@@ -92,12 +77,8 @@
 			this.Heights[_queuedFunction] <- 0;
 			height = 0;
 			if (_queuedFunction in this.Deps)
-			{
 				foreach (dep in this.Deps[_queuedFunction])
-				{
 					height = ::Math.max(height, this.visit(dep, _chain));
-				}
-			}
 
 			if (height == this.Sets.len())
 				this.Sets.append([]);
