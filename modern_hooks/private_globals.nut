@@ -85,19 +85,6 @@
 ::Hooks.__sortQueue <- function( _queuedFunctions )
 {
 	return ::Hooks.ModHooksQueueGraph(_queuedFunctions).getSorted();
-
-	// local graph = ::Hooks.QueueGraph();
-	// foreach (func in _queuedFunctions)
-	// {
-	// 	foreach (modID in func.getLoadBefore())
-	// 		graph.addEdge(modID + "_end", func);
-	// 	foreach (modID in func.getLoadAfter())
-	// 		graph.addEdge(func, modID + "_start");
-	// 	graph.addEdge(func.getModID() + "_start", func)
-	// 	graph.addEdge(func, func.getModID() + "_end")
-	// };
-	// local sortedNodes = graph.topologicalSort();
-	// return sortedNodes.filter(@(_i, _e) _e instanceof ::Hooks.QueuedFunction);
 }
 
 ::Hooks.__executeQueuedFunctions <- function( _queuedFunctions )
