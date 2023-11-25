@@ -49,7 +49,7 @@
 
 	function getQueuedFunctionsByModID( _modID )
 	{
-		return this.QueuedFunctions.filter(@(_i, _func) _func.getModID() == _modID);
+		return this.QueuedFunctions.filter(@(_, _func) _func.getModID() == _modID);
 	}
 
 	function getSorted()
