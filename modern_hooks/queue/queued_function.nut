@@ -93,30 +93,4 @@
 	{
 		return this.Mod;
 	}
-
-	function loadsBefore( _qFunc )
-	{
-		if (this.getLoadBefore().find(_qFunc.getModID()) != null)
-		{
-			foreach (id in this.getLoadAfter())
-			{
-				if (_qFunc.getLoadBefore().find(id) != null)
-					return false;
-			}
-			return true;
-		}
-
-		return false;
-	}
-
-	function loadsAfter( _qFunc )
-	{
-		if (this.getLoadBefore().find(_qFunc.getModID()) != null)
-			return false;
-
-		if (this.getLoadAfter().find(_qFunc.getModID()) != null)
-			return true;
-
-		return false;
-	}
 }

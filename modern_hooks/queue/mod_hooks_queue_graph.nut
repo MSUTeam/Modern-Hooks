@@ -27,7 +27,7 @@
 					local before = qFunc;
 					local after = q;
 
-					if (q.loadsBefore(qFunc))
+					if (this.loadsBefore(q, qFunc))
 					{
 						before = after;
 						after = qFunc;
@@ -89,5 +89,20 @@
 		}
 		_chain.pop();
 		return height;
+	}
+
+	function loadsBefore( _qFunc1, _qFunc2 )
+	{
+		if (_qFunc1.getLoadBefore().find(_qFunc2.getModID()) != null)
+		{
+			foreach (id in _qFunc1.getLoadAfter())
+			{
+				if (_qFunc2.getLoadBefore().find(id) != null)
+					return false;
+			}
+			return true;
+		}
+
+		return false;
 	}
 }
