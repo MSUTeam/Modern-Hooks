@@ -27,3 +27,13 @@ foreach (key, value in ::Const.DLC)
 	foreach (file in ::IO.enumerateFiles("modern_hooks/hooks/last"))
 		::include(file);
 }, ::Hooks.QueueBucket.Last);
+
+::Hooks.__Mod.queue(">mod_msu", function() {
+	if (::Hooks.hasMod("mod_msu"))
+	{
+		local msu_mod = ::MSU.Class.Mod(::Hooks.ID, ::Hooks.Version, ::Hooks.Name);
+		msu_mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.GitHub, "https://github.com/MSUTeam/Modern-Hooks");
+		msu_mod.Registry.setUpdateSource(::MSU.System.Registry.ModSourceDomain.GitHub);
+		msu_mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.NexusMods, "https://www.nexusmods.com/battlebrothers/mods/685");
+	}
+})
