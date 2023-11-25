@@ -77,7 +77,7 @@
 	}
 	local mod = ::Hooks.SQClass.Mod(_modID, _version, _modName, _metaData);
 	this.Mods[_modID] <- mod;
-	this.SortedMods.push(mod);
+	this.OrderedMods.push(mod);
 	::Hooks.inform(format("Modern Hooks registered [emph]%s[/emph] (%s) version [emph]%s[/emph]", this.Mods[_modID].getName(), this.Mods[_modID].getID(), this.Mods[_modID].getVersion().tostring()))
 	return this.Mods[_modID];
 }
@@ -116,7 +116,7 @@
 	this.__validateModCompatibility();
 
 	local buckets = {}; // I hate how I've had to do these buckets without MSU enums
-	foreach (mod in this.SortedMods)
+	foreach (mod in this.OrderedMods)
 	{
 		foreach (func in mod.getQueuedFunctions())
 		{

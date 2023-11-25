@@ -24,7 +24,7 @@
 		dlc_paladins = "DLC: Of Flesh and Faith"
 	}
 	Mods = {},
-	SortedMods = [],
+	OrderedMods = [],
 	JSFiles = [],
 	CSSFiles = [],
 	LateJSFiles = [],
