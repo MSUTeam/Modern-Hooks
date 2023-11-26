@@ -29,11 +29,18 @@ foreach (key, value in ::Const.DLC)
 }, ::Hooks.QueueBucket.Last);
 
 ::Hooks.__Mod.queue(">mod_msu", function() {
-	if (::Hooks.hasMod("mod_msu"))
+	try
 	{
-		local msu_mod = ::MSU.Class.Mod(::Hooks.ID, ::Hooks.Version, ::Hooks.Name);
-		msu_mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.GitHub, "https://github.com/MSUTeam/Modern-Hooks");
-		msu_mod.Registry.setUpdateSource(::MSU.System.Registry.ModSourceDomain.GitHub);
-		msu_mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.NexusMods, "https://www.nexusmods.com/battlebrothers/mods/685");
+		if (::Hooks.hasMod("mod_msu"))
+		{
+			local msu_mod = ::MSU.Class.Mod(::Hooks.ID, ::Hooks.Version, ::Hooks.Name);
+			msu_mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.GitHub, "https://github.com/MSUTeam/Modern-Hooks");
+			msu_mod.Registry.setUpdateSource(::MSU.System.Registry.ModSourceDomain.GitHub);
+			msu_mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.NexusMods, "https://www.nexusmods.com/battlebrothers/mods/685");
+		}
 	}
-})
+	catch (error)
+	{
+		::logError("Something went wrong when trying to use MSU's update checker in modern hooks: " + error);
+	}
+});
