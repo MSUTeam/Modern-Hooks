@@ -37,7 +37,7 @@
 					if (!(after in this.Deps)) 
 						this.Deps[after] <- [];
 					this.Deps[after].push(before);
-				}				
+				}
 			}
 		}
 
