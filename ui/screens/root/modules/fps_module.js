@@ -321,5 +321,5 @@ setTimeout(function(){
 		'font-family' : 'FreeUniversal-Regular'
 	});
 	$('.root-screen').append(Hooks.errorMsg);
-}, 500);
+}, 2000);
 
