@@ -137,9 +137,7 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 	var self = this;
 	SQ.call(this.mSQHandle, "queryData", null, function (_data)
 	{
-		Hooks.screenInit = true;
-		if (Hooks.errorMsg != null)
-			Hooks.errorMsg.remove();
+
 		var jsFiles = _data.JS;
 		for (var i = 0; i < jsFiles.length-1; ++i) // the last one has an onload action appended to it
 		{
@@ -170,8 +168,14 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 			}
 			Hooks.registerScreens();
 			engine.call = engineCall;
-			SQ.call(self.mSQHandle, "resumeOnInit", null);
-
+			SQ.call(self.mSQHandle, "resumeOnInit", null, function(_data){
+				if (_data === true)
+				{
+					Hooks.screenInit = true;
+					if (Hooks.errorMsg != null)
+						Hooks.errorMsg.remove();
+				}
+			});
 			var lateJsFiles = _data.LateJS;
 			for (var i = 0; i < lateJsFiles.length; i++)
 			{

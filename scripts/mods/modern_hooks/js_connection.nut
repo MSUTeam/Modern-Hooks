@@ -98,5 +98,6 @@ this.js_connection <- {
 	{
 		::Hooks.RootState.ModernHooks_resumeOnInit();
 		::Hooks.MainMenuState.ModernHooks_resumeOnInit();
+		return true;
 	}
 }
