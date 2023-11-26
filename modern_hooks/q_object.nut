@@ -121,7 +121,14 @@
 		}
 		else if (oldParams.len() != newParams.len())
 		{
-			::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
+			if (oldParams.len() - _oldInfos.defparams.len() == newParams.len() - _newInfos.defparams.len())
+			{
+				::logInfo(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters, but the additional parameters are optional, so this is probably fine (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
+			}
+			else
+			{
+				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
+			}
 		}
 	}
 
