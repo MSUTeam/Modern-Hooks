@@ -89,12 +89,20 @@
 
 ::Hooks.__executeQueuedFunctions <- function( _queuedFunctions )
 {
+	local root = getroottable();
 	foreach (queuedFunction in _queuedFunctions)
 	{
 		local mod = queuedFunction.getMod();
 		local versionString = typeof mod.getVersion() == "float" ? mod.getVersion().tostring() : mod.getVersion().getVersionString();
 		::Hooks.inform(format("Executing queued function [emph]%i %s[/emph] for [emph]%s[/emph] (%s) version %s.", queuedFunction.getFunctionID(), queuedFunction.getDetailsString(), mod.getName(), mod.getID(), versionString));
-		queuedFunction.getFunction()();
+		try
+		{
+			queuedFunction.getFunction().call(root);
+		}
+		catch (error)
+		{
+			::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during queue function %i %s.", mod.getID(), mod.getName(), versionString, error, queuedFunction.getFunctionID(), queuedFunction.getDetailsString()));
+		}
 	}
 }
 
@@ -220,19 +228,37 @@
 ::Hooks.__processRawHooks <- function( _src )
 {
 	local p = this.BBClass[_src].Prototype;
+	local root = getroottable();
 	foreach (hookInfo in this.BBClass[_src].RawHooks)
 	{
-		hookInfo.hook(p);
+		try
+		{
+			hookInfo.hook.call(root, p);
+		}
+		catch (error)
+		{
+			local versionString = typeof hookInfo.Mod.getVersion() == "float" ? hookInfo.Mod.getVersion().tostring() : hookInfo.Mod.getVersion().getVersionString();
+			::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
+		}
 	}
-	foreach (hook in this.BBClass[_src].NativeHooks)
+	foreach (hookInfo in this.BBClass[_src].NativeHooks)
 	{
-		hook();
+		try
+		{
+			hookInfo.hook.call(root, p);
+		}
+		catch (error)
+		{
+			local versionString = typeof hookInfo.Mod.getVersion() == "float" ? hookInfo.Mod.getVersion().tostring() : hookInfo.Mod.getVersion().getVersionString();
+			::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its native hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
+		}
 	}
 	this.BBClass[_src].Processed = true;
 }
 
 ::Hooks.__finalizeHooks <- function()
 {
+	local root = getroottable();
 	foreach (src, bbclass in this.BBClass)
 	{
 		// normal hook logic
@@ -247,9 +273,19 @@
 		}
 
 		// leaf hook logic
-		foreach (prototype in bbclass.Descendants)
+		foreach (p in bbclass.Descendants)
 			foreach (hookInfo in bbclass.TreeHooks)
-				hookInfo.hook(prototype);
+			{
+				try
+				{
+					hookInfo.hook.call(root, p);
+				}
+				catch (error)
+				{
+					local versionString = typeof hookInfo.Mod.getVersion() == "float" ? hookInfo.Mod.getVersion().tostring() : hookInfo.Mod.getVersion().getVersionString();
+					::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its tree hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
+				}
+			}
 	}
 }
 
