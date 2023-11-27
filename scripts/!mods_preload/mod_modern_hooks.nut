@@ -1,7 +1,9 @@
 local versionArray = split(::GameInfo.getVersionNumber(), ".");
 local preRelease = versionArray.pop();
 local version = versionArray.reduce(@(_a, _b) _a + "." + _b) + "-" + preRelease;
-::Hooks.register("vanilla", version, "Vanilla");
+// temporary patch for MSU 1.2 compatibility
+if (!::Hooks.hasMod("vanilla") && !("MSU" in this.getroottable() && ::Hooks.SQClass.ModVersion(::MSU.Version) < ::Hooks.SQClass.ModVersion("1.3.0-a") ))
+	::Hooks.register("vanilla", version, "Vanilla");
 foreach (key, value in ::Const.DLC)
 {
 	if ((typeof value != "bool") || (value == false))
@@ -14,7 +16,8 @@ foreach (key, value in ::Const.DLC)
 		else
 			string += char.tochar();
 	}
-	::Hooks.register(string, "1.0.0", ::Hooks.__getCachedNameForID(string));
+	if (!::Hooks.hasMod(string))
+		::Hooks.register(string, "1.0.0", ::Hooks.__getCachedNameForID(string));
 }
 
 ::Hooks.__Mod <- ::Hooks.register(::Hooks.ID, ::Hooks.Version, ::Hooks.Name);
