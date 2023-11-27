@@ -1,6 +1,6 @@
 ::Hooks <- {
 	ID = "mod_modern_hooks",
-	Version = "0.4.0-rc.2",
+	Version = "0.4.0",
 	Name = "Modern Hooks",
 	SQClass = {},
 	BBClass = {
