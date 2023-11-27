@@ -76,20 +76,45 @@ local function inverter(_operator)
 	};
 	local loadOrderData = [mod];
 	// now convert into modern_hooks
+	local splitExpr = [];
 	foreach (expression in expr)
 	{
+		if ([null, '!'].find(expression.op) == null && expression.verOp != null)
+		{
+			splitExpr.push({
+				op = expression.op,
+				modName = expression.modName,
+				verOp = null,
+				version = null,
+			});
+			splitExpr.push({
+				op = null,
+				modName = expression.modName,
+				verOp = expression.verOp,
+				version = expression.version
+			});
+			continue;
+		}
+		splitExpr.push(expression)
+	}
+
+	foreach (expression in splitExpr)
+	{
+		local expressionInfo = expression.modName;
+		if (expression.verOp != null)
+			expressionInfo += format(" %s %s",expression.verOp, expression.version);
 		local invert = false;
 		local requirement = null;
 		switch (expression.op)
 		{
 			case null:
 				requirement = true;
-				compatibilityData.Require.push(expression.modName);
+				compatibilityData.Require.push(expressionInfo);
 				loadOrderData.push(">" + expression.modName);
 				break;
 			case '!':
 				requirement = false;
-				compatibilityData.ConflictWith.push(expression.modName);
+				compatibilityData.ConflictWith.push(expressionInfo);
 				break;
 			case '<':
 				invert = true;
