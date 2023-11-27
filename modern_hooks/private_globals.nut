@@ -266,7 +266,21 @@
 		{
 			if (bbclass.Prototype == null)
 			{
-				::Hooks.error(format("%s was never proceessed for hooks", src));
+				local mods = {};
+				foreach (hookInfo in bbclass.RawHooks)
+					mods[hookInfo.Mod] <- hookInfo.Mod;
+				foreach (hookInfo in bbclass.TreeHooks)
+					mods[hookInfo.Mod] <- hookInfo.Mod;
+				local string = "";
+				foreach (mod in mods)
+				{
+					if (mod.getID() == "mod_hooks")
+						string += "unknown, "
+					else
+						string += format("%s (%s), ", mod.getID(), mod.getName());
+				}
+				string = string.slice(0,-2);
+				::Hooks.error(format("%s was never proceessed for hooks. The following mods tried to hook it: %s", src, string));
 				continue;
 			}
 			this.__processRawHooks(src);
