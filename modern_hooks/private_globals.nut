@@ -266,7 +266,7 @@
 		{
 			if (bbclass.Prototype == null)
 			{
-				::Hooks.error(format("%s was never proceessed for hooks", src));
+				::Hooks.warn(format("%s was never proceessed for hooks", src));
 				continue;
 			}
 			this.__processRawHooks(src);
