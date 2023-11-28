@@ -43,32 +43,71 @@ local function inverter(_operator)
 	}
 }
 
-::mods_queue = function( codeName, expr, func )
+::mods_queue = function( codeName, _expr, func )
 {
 	if (codeName == null)
 		codeName = lastRegistered;
 	if (!::Hooks.hasMod(codeName))
 		::Hooks.errorAndThrow(format("Mod %s is trying to queue without registering first", codeName));
-
-	// parse expression using mod_hooks function
-	local match = function(s,m,i) {
-		local m = m[i];
-		local len = s.len();
-		local found = m.begin >= 0 && m.end > 0 && m.begin < len && m.end <= len;
-		return found ? s.slice(m.begin, m.end) : null
-	};
-	if (expr == "" || expr == null)
-		expr = []
-	else
-		expr = split(expr, ",");
-	for(local i = 0; i < expr.len(); ++i)
+	local mod = ::Hooks.getMod(codeName);
+	local exprStrings = (_expr == "" || _expr == null) ? [] : split(_expr, ",");
+	local expr = [];
+	foreach (rawExprString in exprStrings)
 	{
-		local e = strip(expr[i]), m = g_exprRe.capture(e);
-		if (m == null)
-			throw "Invalid queue expression '" + e + "'.";
-		expr[i] = { op = m[1].end != 0 ? e[0] : null, modName = match(e, m, 2), verOp = match(e, m, 3), version = match(e, m, 4) };
-	}
+		local exprString = strip(rawExprString);
+		local expression = {
+			op = null,
+			modName = null,
+			verOp = null,
+			version = null
+		};
+		// this stuff is a pain because of how buggy regexp is
+		local capture = ::Hooks.__OldHooksRequirementOperatorRegex.capture(exprString);
+		if (capture == null)
+			expression.op = null;
+		else
+		{
+			expression.op = ::Hooks.__msu_regexMatch(capture, exprString, 0);
+			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
+		}
 
+		capture = ::Hooks.__ModIDRegex.capture(exprString);
+		if (capture == null)
+			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): error at %s", _expr, mod.getID(), mod.getName(), rawExprString));
+		else
+		{
+			expression.modName = ::Hooks.__msu_regexMatch(capture, exprString, 0);
+			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
+		}
+
+		capture = ::Hooks.__OldHooksOperatorAndVersionRegex.capture(exprString);
+		if (capture != null)
+		{
+			expression.verOp = ::Hooks.__msu_regexMatch(capture, exprString, 1);
+			expression.version = ::Hooks.__msu_regexMatch(capture, exprString, 2);
+			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
+		}
+
+		if (exprString.len() != 0)
+			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): error at %s", _expr, mod.getID(), mod.getName(), rawExprString));
+		if ((expression.op == '>' || expression.op == '<') && expression.verOp != null)
+		{
+			expr.push({
+				op = expression.op,
+				modName = expression.modName,
+				verOp = null,
+				version = null,
+			});
+			expr.push({
+				op = null,
+				modName = expression.modName,
+				verOp = expression.verOp,
+				version = expression.version
+			});
+		}
+		else
+			expr.push(expression);
+	}
 	local mod = ::Hooks.getMod(codeName);
 	local compatibilityData = {
 		Require = [mod],
@@ -76,33 +115,11 @@ local function inverter(_operator)
 	};
 	local loadOrderData = [mod];
 	// now convert into modern_hooks
-	local splitExpr = [];
 	foreach (expression in expr)
-	{
-		if ([null, '!'].find(expression.op) == null && expression.verOp != null)
-		{
-			splitExpr.push({
-				op = expression.op,
-				modName = expression.modName,
-				verOp = null,
-				version = null,
-			});
-			splitExpr.push({
-				op = null,
-				modName = expression.modName,
-				verOp = expression.verOp,
-				version = expression.version
-			});
-			continue;
-		}
-		splitExpr.push(expression)
-	}
-
-	foreach (expression in splitExpr)
 	{
 		local expressionInfo = expression.modName;
 		if (expression.verOp != null)
-			expressionInfo += format(" %s %s",expression.verOp, expression.version);
+			expressionInfo += format(" %s %s",expression.verOp.tostring(), expression.version);
 		local invert = false;
 		local requirement = null;
 		switch (expression.op)
