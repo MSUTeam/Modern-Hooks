@@ -43,125 +43,13 @@ local function inverter(_operator)
 	}
 }
 
-::mods_queue = function( codeName, _expr, func )
+::mods_queue = function( _modID, _rawExpression, _function )
 {
-	if (codeName == null)
-		codeName = lastRegistered;
-	if (!::Hooks.hasMod(codeName))
-		::Hooks.errorAndThrow(format("Mod %s is trying to queue without registering first", codeName));
-	local mod = ::Hooks.getMod(codeName);
-	local exprStrings = (_expr == "" || _expr == null) ? [] : split(_expr, ",");
-	local expr = [];
-	foreach (rawExprString in exprStrings)
-	{
-		local exprString = strip(rawExprString);
-		local expression = {
-			op = null,
-			modName = null,
-			verOp = null,
-			version = null
-		};
-		// this stuff is a pain because of how buggy regexp is
-		local capture = ::Hooks.__OldHooksRequirementOperatorRegex.capture(exprString);
-		if (capture == null)
-			expression.op = null;
-		else
-		{
-			expression.op = ::Hooks.__msu_regexMatch(capture, exprString, 0);
-			if (typeof expression.op == "string")
-				expression.op = expression.op[0]
-			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
-		}
-
-		capture = ::Hooks.__ModIDRegex.capture(exprString);
-		if (capture == null)
-			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): error at %s", _expr, mod.getID(), mod.getName(), rawExprString));
-		else
-		{
-			expression.modName = ::Hooks.__msu_regexMatch(capture, exprString, 0);
-			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
-		}
-
-		capture = ::Hooks.__OldHooksOperatorAndVersionRegex.capture(exprString);
-		if (capture != null)
-		{
-			expression.verOp = ::Hooks.__msu_regexMatch(capture, exprString, 1);
-			expression.version = ::Hooks.__msu_regexMatch(capture, exprString, 2);
-			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
-		}
-
-		if (exprString.len() != 0)
-			::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): error at %s", _expr, mod.getID(), mod.getName(), rawExprString));
-		if ((expression.op == '>' || expression.op == '<') && expression.verOp != null)
-		{
-			expr.push({
-				op = expression.op,
-				modName = expression.modName,
-				verOp = null,
-				version = null,
-			});
-			expr.push({
-				op = null,
-				modName = expression.modName,
-				verOp = expression.verOp,
-				version = expression.version
-			});
-		}
-		else
-			expr.push(expression);
-	}
-	local mod = ::Hooks.getMod(codeName);
-	local compatibilityData = {
-		Require = [mod],
-		ConflictWith = [mod]
-	};
-	local loadOrderData = [mod];
-	// now convert into modern_hooks
-	foreach (expression in expr)
-	{
-		local expressionInfo = expression.modName;
-		if (expression.verOp != null)
-			expressionInfo += format(" %s %s",expression.verOp.tostring(), expression.version);
-		local invert = false;
-		local requirement = null;
-		switch (expression.op)
-		{
-			case null:
-				requirement = true;
-				compatibilityData.Require.push(expressionInfo);
-				loadOrderData.push(">" + expression.modName);
-				break;
-			case '!':
-				requirement = false;
-				compatibilityData.ConflictWith.push(expressionInfo);
-				break;
-			case '<':
-				invert = true;
-				loadOrderData.push("<" + expression.modName);
-				break;
-			case '>':
-				invert = true;
-				loadOrderData.push(">" + expression.modName);
-				break;
-		}
-		if (expression.version == null)
-			continue;
-		if (invert)
-		{
-			compatibilityData.ConflictWith.push(expression.modName);
-			requirement = false;
-			expression.verOp = inverter(expression.verOp)
-		}
-		local currentArray = compatibilityData[requirement ? "Require" : "ConflictWith"];
-		local currentMod = currentArray[currentArray.len()-1];
-		if (expression.verOp == null)
-			expression.verOp = "=";
-		currentMod += " " + expression.verOp + " " + expression.version;
-	}
-	mod.require.acall(compatibilityData.Require);
-	mod.conflictWith.acall(compatibilityData.ConflictWith);
-	loadOrderData.push(func);
-	mod.queue.acall(loadOrderData);
+	if (_modID == null)
+		_modID = lastRegistered;
+	if (!::Hooks.hasMod(_modID))
+		::Hooks.errorAndThrow(format("Mod %s is trying to queue without registering first", _modID));
+	::Hooks.__executeOldHooksExpressions(::Hooks.getMod(_modID), _rawExpression, _function);
 }
 
 ::mods_getRegisteredMod = function( _modID )

@@ -106,6 +106,128 @@
 	}
 }
 
+::Hooks.__convertOldHooksExpressionToTable <- function( _mod, _exprString )
+{
+	local exprString = strip(_exprString);
+	local expression = {
+		op = null,
+		modName = null,
+		verOp = null,
+		version = null
+	};
+
+	local capture = ::Hooks.__OldHooksRequirementOperatorRegex.capture(exprString);
+	if (capture == null)
+		expression.op = null;
+	else
+	{
+		expression.op = ::Hooks.__msu_regexMatch(capture, exprString, 0);
+		exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
+	}
+
+	capture = ::Hooks.__ModIDRegex.capture(exprString);
+	if (capture == null)
+		::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): error at %s", _exprString, _mod.getID(), _mod.getName(), exprString));
+	else
+	{
+		expression.modName = ::Hooks.__msu_regexMatch(capture, exprString, 0);
+		exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
+	}
+
+	capture = ::Hooks.__OldHooksOperatorAndVersionRegex.capture(exprString);
+	if (capture != null)
+	{
+		expression.verOp = ::Hooks.__msu_regexMatch(capture, exprString, 1);
+		if (expression.verOp == null)
+			expression.verOp = "="
+		expression.version = ::Hooks.__msu_regexMatch(capture, exprString, 2);
+		exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
+	}
+	if (exprString.len() != 0)
+		::Hooks.errorAndThrow(format("Queue information %s wasn't formatted correctly by mod %s (%s): error at %s", _exprString, _mod.getID(), _mod.getName(), exprString));
+
+	return expression;
+}
+
+::Hooks.__invertOperator <- function( _operator )
+{
+	switch (_operator)
+	{
+		case "=":
+		case null:
+			return "!=";
+		case "!":
+		case "!=":
+			return "=";
+		case ">=":
+			return "<";
+		case ">":
+			return "<=";
+		case "<=":
+			return ">";
+		case "<":
+			return ">=";
+	}
+}
+
+::Hooks.__getDependencyString <- function( _modID, _operator, _version )
+{
+	if (_operator != null)
+		return format("%s %s %s", _modID, _operator, _version)
+	return _modID
+}
+
+::Hooks.__getQueueString <- function( _modID, _operator )
+{
+	return format("%s%s", _operator, _modID);
+}
+
+::Hooks.__convertOldHooksExpressionString <- function( _mod, _rawExpression )
+{
+	local expressionStrings = _rawExpression == null ? [] : split(_rawExpression, ",");
+	local conflicts = [];
+	local requirements = [];
+	local orderData = [];
+
+	foreach (exprString in expressionStrings)
+	{
+		local expr = ::Hooks.__convertOldHooksExpressionToTable(_mod, exprString);
+		if ((expr.op == ">" || expr.op == "<") && expr.version != null)
+		{
+			conflicts.push(::Hooks.__getDependencyString(expr.modName, ::Hooks.__invertOperator(expr.verOp), expr.version));
+			orderData.push(::Hooks.__getQueueString(expr.modName, expr.op));
+			continue;
+		}
+		switch (expr.op)
+		{
+			case null:
+				requirements.push(::Hooks.__getDependencyString(expr.modName, expr.verOp, expr.version));
+				break;
+			case "!":
+				conflicts.push(::Hooks.__getDependencyString(expr.modName, expr.verOp, expr.version));
+				break;
+			default:
+				orderData.push(::Hooks.__getQueueString(expr.modName, expr.op));
+		}
+	}
+	return {
+		Conflicts = conflicts,
+		Requirements = requirements,
+		OrderData = orderData
+	};
+}
+
+::Hooks.__executeOldHooksExpressions <- function( _mod, _rawExpression, _function )
+{
+	local parsedOldHooksData = ::Hooks.__convertOldHooksExpressionString(_mod, _rawExpression);
+	foreach (key, array in parsedOldHooksData)
+		array.insert(0, _mod);
+	_mod.require.acall(parsedOldHooksData.Requirements);
+	_mod.conflictWith.acall(parsedOldHooksData.Conflicts);
+	parsedOldHooksData.OrderData.push(_function);
+	_mod.queue.acall(parsedOldHooksData.OrderData);
+}
+
 ::Hooks.__runQueue <- function()
 {
 	this.__validateModCompatibility();
