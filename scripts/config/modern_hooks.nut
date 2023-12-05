@@ -40,7 +40,7 @@
 	__ModOperatorAndVersionRegex = regexp(@"^((?:!|>|<|=)=?) ([^ ]+)"),
 	__ModNameRegex = regexp(@"^\((.+)\)"),
 	__ModDetailsRegex = regexp(@"^\[(.+)\]"),
-	__OldHooksOperatorAndVersionRegex = regexp(@"^\(([<>!=]=?)([\w\.\+\-]+)\)"),
+	__OldHooksOperatorAndVersionRegex = regexp(@"^\(([<>!=]?=?)([\w\.\+\-]+)\)"),
 	__OldHooksRequirementOperatorRegex = regexp(@"^[!<>]"),
 	__IntFloatRegex = regexp("^\\d+(?:\\.\\d+)?$"),
 	__TacticalEntityPath = "scripts/entity/tactical/entity",
