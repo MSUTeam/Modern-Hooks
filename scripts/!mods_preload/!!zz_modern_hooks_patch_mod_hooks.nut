@@ -68,6 +68,8 @@ local function inverter(_operator)
 		else
 		{
 			expression.op = ::Hooks.__msu_regexMatch(capture, exprString, 0);
+			if (typeof expression.op == "string")
+				expression.op = expression.op[0]
 			exprString = strip(exprString.slice(capture[0].end - capture[0].begin));
 		}
 
