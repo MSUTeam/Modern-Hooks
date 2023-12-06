@@ -202,6 +202,7 @@
 		{
 			case null:
 				requirements.push(::Hooks.__getDependencyString(expr.modName, expr.verOp, expr.version));
+				orderData.push(::Hooks.__getQueueString(expr.modName, ">"));
 				break;
 			case "!":
 				conflicts.push(::Hooks.__getDependencyString(expr.modName, expr.verOp, expr.version));
