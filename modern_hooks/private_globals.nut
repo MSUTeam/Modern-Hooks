@@ -368,7 +368,7 @@
 	{
 		try
 		{
-			hookInfo.hook.call(root, p);
+			hookInfo.hook.call(root);
 		}
 		catch (error)
 		{
