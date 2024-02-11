@@ -394,9 +394,12 @@
 			}
 			this.__processRawHooks(src);
 		}
-
-		// leaf hook logic
+	}
+	// leaf hook logic
+	foreach (src, bbclass in this.BBClass)
+	{
 		foreach (p in bbclass.Descendants)
+		{
 			foreach (hookInfo in bbclass.TreeHooks)
 			{
 				try
@@ -409,6 +412,7 @@
 					::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its tree hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
 				}
 			}
+		}
 	}
 }
 
