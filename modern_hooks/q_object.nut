@@ -76,20 +76,41 @@
 		return delete _q.__Prototype.m[_key];
 	}
 
-	function foreach_generator(_table)
+	function foreachGeneratorFuncs( _table )
+	{
+		foreach (key, value in _table)
+		{
+			if (typeof value != "function")
+				continue;
+			yield key;
+		}
+		return null;
+	}
+
+	function foreachGenerator(_table)
 	{
 		foreach (key, value in _table)
 			yield key;
 		return null;
 	}
 
-	function nexti( _qOrQm, _table, _prev )
+	function nexti( _q, _prev )
 	{
 		if (_prev == null)
-			_qOrQm.__NextIGenerator = this.foreach_generator(_table);
-		local ret = resume _qOrQm.__NextIGenerator;
+			_q.__NextIGenerator = this.foreachGeneratorFuncs(_q.__Prototype);
+		local ret = resume _q.__NextIGenerator;
 		if (ret == null)
-			_qOrQm.__NextIGenerator = null;
+			_q.__NextIGenerator = null;
+		return ret;
+	}
+
+	function nextiM(_q, _prev)
+	{
+		if (_prev == null)
+			_q.m.__NextIGenerator = this.foreachGenerator(_q.__Prototype.m);
+		local ret = resume _q.m.__NextIGenerator;
+		if (ret == null)
+			_q.m.__NextIGenerator = null;
 		return ret;
 	}
 
@@ -288,7 +309,7 @@
 
 	function _nexti( _prev )
 	{
-		return ::Hooks.__Q.nexti(this, this.__Prototype, _prev);
+		return ::Hooks.__Q.nexti(this, _prev);
 	}
 
 	function contains( _key, _checkAncestors = false )
@@ -339,7 +360,7 @@
 
 	function _nexti( _prev )
 	{
-		return ::Hooks.__Q.nexti(this, this.Q.__Prototype.m, _prev);
+		return ::Hooks.__Q.nextiM(this.Q, _prev);
 	}
 
 	function contains( _key, _checkAncestors = false )
