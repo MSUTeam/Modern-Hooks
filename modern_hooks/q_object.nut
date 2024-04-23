@@ -76,23 +76,21 @@
 		return delete _q.__Prototype.m[_key];
 	}
 
+	function foreach_generator(_table)
+	{
+		foreach (key, value in _table)
+			yield key;
+		return null;
+	}
+
 	function nexti( _qOrQm, _table, _prev )
 	{
 		if (_prev == null)
-		{
-			_qOrQm.__NextIArray = array(_table.len());
-			local i = 0;
-			foreach (key, value in _table)
-				_qOrQm.__NextIArray[i++] = key;
-			_qOrQm.__NextICache = 0;
-		}
-		if (_qOrQm.__NextICache == _qOrQm.__NextIArray.len())
-		{
-			_qOrQm.__NextIArray = null;
-			_qOrQm.__NextICache = null;
-			return null;
-		}
-		return _qOrQm.__NextIArray[_qOrQm.__NextICache++];
+			_qOrQm.__NextIGenerator = this.foreach_generator(_table);
+		local ret = resume _qOrQm.__NextIGenerator;
+		if (ret == null)
+			_qOrQm.__NextIGenerator = null;
+		return ret;
 	}
 
 	function validateParameters( _q, _key, _oldInfos, _newInfos )
@@ -256,8 +254,7 @@
 	__Src = null;
 	__Prototype = null;
 	__Mod = null;
-	__NextIArray = null;
-	__NextICache = null;
+	__NextIGenerator = null;
 	m = null;
 	constructor(_mod, _src, _prototype)
 	{
@@ -313,8 +310,7 @@
 
 ::Hooks.__Q.Qm <- class {
 	Q = null;
-	__NextIArray = null;
-	__NextICache = null;
+	__NextIGenerator = null;
 
 	constructor(_Q)
 	{
