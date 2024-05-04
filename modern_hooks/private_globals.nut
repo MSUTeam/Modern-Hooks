@@ -389,7 +389,22 @@
 		{
 			if (bbclass.Prototype == null)
 			{
-				::Hooks.warn(format("%s was never proceessed for hooks", src));
+				local warnString = format("The BB class '%s' was never proceessed for hooks", src);
+				local relevantMods = bbclass.RawHooks.map(@(hookInfo) format("%s (%s)", hookInfo.Mod.getID(), hookInfo.Mod.getName())).reduce(@(a, b) a + ", " + b);
+
+				if (relevantMods != null)
+					warnString += format(", it was targeted by %s with normal hooks", relevantMods);
+				local relevantTreeMods = bbclass.TreeHooks.map(@(hookInfo) format("%s (%s)", hookInfo.Mod.getID(), hookInfo.Mod.getName())).reduce(@(a, b) a + ", " + b)
+				if (relevantTreeMods != null)
+				{
+					if (relevantMods != null)
+						warnString += " and";
+					else
+						warnString += ", it was targeted by";
+					warnString += format(" %s with tree hooks", relevantTreeMods);
+				}
+
+				::Hooks.warn(warnString);
 				continue;
 			}
 			this.__processRawHooks(src);
