@@ -39,11 +39,12 @@
 		return true;
 	foreach (error in compatErrors)
 	{
+		local requireString = error.Target.CompatibilityType == ::Hooks.CompatibilityType.Requirement ? "requires" : "conflicts with";
 		switch (error.Reason)
 		{
 			case ::Hooks.CompatibilityCheckResult.ModMissing:
 				local name = error.Target.getModID() in ::Hooks.CachedModNames ? ::Hooks.CachedModNames[error.Target.getModID()] : error.Target.getModName();
-				::Hooks.error(format("%s (%s) requires %s (%s)%s", error.Source.getID(), error.Source.getName(), error.Target.getModID(), name, error.Target.getFormattedDetails()));
+				::Hooks.error(format("%s (%s) %s %s (%s)%s", error.Source.getID(), error.Source.getName(), requireString, error.Target.getModID(), name, error.Target.getFormattedDetails()));
 				break;
 			case ::Hooks.CompatibilityCheckResult.ModPresent:
 				local mod = ::Hooks.getMod(error.Target.getModID());
@@ -51,15 +52,15 @@
 				break;
 			case ::Hooks.CompatibilityCheckResult.TooSmall:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				::Hooks.error(format("%s (%s) version %s is outdated for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
+				::Hooks.error(format("%s (%s) version %s is outdated for %s (%s), which %s versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), requireString, error.Target.getErrorString()))
 				break;
 			case ::Hooks.CompatibilityCheckResult.TooBig:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				::Hooks.error(format("%s (%s) version %s is too new for %s (%s), which requires versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
+				::Hooks.error(format("%s (%s) version %s is too new for %s (%s), which %s versions %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), requireString, error.Target.getErrorString()))
 				break;
 			case ::Hooks.CompatibilityCheckResult.Incorrect:
 				local mod = ::Hooks.getMod(error.Target.getModID());
-				::Hooks.error(format("%s (%s) version %s is wrong for %s (%s), which requires (a) version %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), error.Target.getErrorString()))
+				::Hooks.error(format("%s (%s) version %s is wrong for %s (%s), which %s (a) version %s", mod.getID(), mod.getName(), mod.getVersionString(), error.Source.getID(), error.Source.getName(), requireString, error.Target.getErrorString()))
 				break;
 		}
 	}

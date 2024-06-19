@@ -55,35 +55,64 @@ local function msu_String_isInteger( _string )
 
 	function __processCmpResult( _cmpResult )
 	{
+		if (this.CompatibilityType == ::Hooks.CompatibilityType.Requirement)
+		{
+			if (_cmpResult < 0)
+			{
+				if (this.Operator == ::Hooks.Operator.EQ)
+					return ::Hooks.CompatibilityCheckResult.Incorrect;
+				if (this.Operator <= ::Hooks.Operator.LE || this.Operator == ::Hooks.Operator.NE)
+					return ::Hooks.CompatibilityCheckResult.Success;
+				return ::Hooks.CompatibilityCheckResult.TooSmall;
+			}
+			if (_cmpResult == 0)
+			{
+				if ([::Hooks.Operator.LE, ::Hooks.Operator.EQ, ::Hooks.Operator.GE].find(this.Operator) != null)
+					return ::Hooks.CompatibilityCheckResult.Success;
+				if (this.Operator == ::Hooks.Operator.LT)
+					return ::Hooks.CompatibilityCheckResult.TooBig;
+				if (this.Operator == ::Hooks.Operator.GT)
+					return ::Hooks.CompatibilityCheckResult.TooSmall;
+				return ::Hooks.CompatibilityCheckResult.Incorrect;
+			}
+			if (this.Operator == ::Hooks.Operator.EQ)
+				return ::Hooks.CompatibilityCheckResult.Incorrect;
+			if (this.Operator >= ::Hooks.Operator.NE)
+				return ::Hooks.CompatibilityCheckResult.Success;
+			return ::Hooks.CompatibilityCheckResult.TooBig;
+		}
 		if (_cmpResult < 0)
 		{
-			if (this.Operator <= ::Hooks.Operator.LE || this.Operator == ::Hooks.Operator.NE)
+			if (this.Operator == ::Hooks.Operator.NE)
+				return ::Hooks.CompatibilityCheckResult.Incorrect;
+			if ([::Hooks.Operator.EQ, ::Hooks.Operator.GT, ::Hooks.Operator.GE].find(this.Operator) != null)
 				return ::Hooks.CompatibilityCheckResult.Success;
 			return ::Hooks.CompatibilityCheckResult.TooSmall;
 		}
 		if (_cmpResult == 0)
 		{
-			if ([::Hooks.Operator.LE, ::Hooks.Operator.EQ, ::Hooks.Operator.GE].find(this.Operator) != null)
+			if ([::Hooks.Operator.LT, ::Hooks.Operator.NE, ::Hooks.Operator.GT].find(this.Operator) != null)
 				return ::Hooks.CompatibilityCheckResult.Success;
-			if (this.Operator == ::Hooks.Operator.LT)
-				return ::Hooks.CompatibilityCheckResult.TooBig;
-			if (this.Operator == ::Hooks.Operator.GT)
+			if (this.Operator == ::Hooks.Operator.LE)
 				return ::Hooks.CompatibilityCheckResult.TooSmall;
+			if (this.Operator == ::Hooks.Operator.GE)
+				return ::Hooks.CompatibilityCheckResult.TooBig;
 			return ::Hooks.CompatibilityCheckResult.Incorrect;
 		}
-		if (this.Operator >= ::Hooks.Operator.NE)
+		if (this.Operator == ::Hooks.Operator.NE)
+			return ::Hooks.CompatibilityCheckResult.Incorrect;
+		if ([::Hooks.Operator.EQ, ::Hooks.Operator.LT, ::Hooks.Operator.LE].find(this.Operator) != null)
 			return ::Hooks.CompatibilityCheckResult.Success;
 		return ::Hooks.CompatibilityCheckResult.TooBig;
 	}
 
 	function validateModVersion( _mod )
 	{
-		local cmpTypeModifier = this.CompatibilityType == ::Hooks.CompatibilityType.Requirement ? 1 : -1;
 		if (typeof _mod.getVersion() == "float" && typeof this.Version == "instance")
-			return this.__processCmpResult(1 * cmpTypeModifier);
+			return this.__processCmpResult(1);
 		if (typeof _mod.getVersion() == "instance" && typeof this.Version == "float")
-			return this.__processCmpResult(-1 * cmpTypeModifier);
-		return this.__processCmpResult((_mod.getVersion() <=> this.Version) * cmpTypeModifier);
+			return this.__processCmpResult(-1);
+		return this.__processCmpResult(_mod.getVersion() <=> this.Version);
 	}
 
 	function getErrorString()
