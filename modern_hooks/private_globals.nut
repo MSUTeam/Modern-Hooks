@@ -425,7 +425,7 @@
 				catch (error)
 				{
 					local versionString = typeof hookInfo.Mod.getVersion() == "float" ? hookInfo.Mod.getVersion().tostring() : hookInfo.Mod.getVersion().getVersionString();
-					::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its tree hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
+					::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its tree hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, src));
 				}
 			}
 		}
