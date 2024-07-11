@@ -195,6 +195,9 @@
 			{
 				foreach (i, defparam in oldInfos.defparams)
 				{
+					if (defparam == null)
+						defparam = "null";
+
 					declarationParams[declarationParams.len() - oldInfos.defparams.len() + i] += " = " + defparam;
 				}
 			}
