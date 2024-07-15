@@ -183,28 +183,53 @@
 
 		if (_instantiated == false && ancestorCounter > 1)
 		{
-			local declarationParams = clone oldInfos.parameters; // used in compilestring for function declaration
-			local wrappedParams = clone declarationParams; // used in compilestring to call parent function
-
-			if (declarationParams[declarationParams.len() - 1] == "...")
+			local hasRefParam = false;
+			foreach (p in oldInfos.defparams)
 			{
-				declarationParams.remove(declarationParams.len() - 2); // remove "vargv"
-				wrappedParams.remove(wrappedParams.len() - 1); // remove "..."
-			}
-			else // function with vargv cannot have defparams
-			{
-				foreach (i, defparam in oldInfos.defparams)
+				local t = typeof p;
+				if (t == "array" || t == "table" || t == "instance" || t == "class")
 				{
-					declarationParams[declarationParams.len() - oldInfos.defparams.len() + i] += " = " + defparam;
+					hasRefParam = true;
+					break;
 				}
 			}
 
-			declarationParams.remove(0); // remove "this"
-			wrappedParams.remove(0); // remove "this"
-			declarationParams = declarationParams.len() == 0 ? "" : declarationParams.reduce(@(a, b) a + ", " + b);
-			wrappedParams = wrappedParams.len() == 0 ? "" : wrappedParams.reduce(@(a, b) a + ", " + b);
+			if (hasRefParam)
+			{
+				local superName = _q.__Prototype.SuperName;
+				oldFunction = function(...) {
+					vargv.insert(0, this);
+					return this[superName][_key].acall(vargv);
+				}
+			}
+			else
+			{
+				local declarationParams = clone oldInfos.parameters; // used in compilestring for function declaration
+				local wrappedParams = clone declarationParams; // used in compilestring to call parent function
 
-			oldFunction = compilestring(format("return function (%s) { return this.%s.%s(%s); }", declarationParams, _q.__Prototype.SuperName, _key, wrappedParams))();
+				if (declarationParams[declarationParams.len() - 1] == "...")
+				{
+					declarationParams.remove(declarationParams.len() - 2); // remove "vargv"
+					wrappedParams.remove(wrappedParams.len() - 1); // remove "..."
+				}
+				else // function with vargv cannot have defparams
+				{
+					foreach (i, defparam in oldInfos.defparams)
+					{
+						if (defparam == null)
+							defparam = "null";
+
+						declarationParams[declarationParams.len() - oldInfos.defparams.len() + i] += " = " + defparam;
+					}
+				}
+
+				declarationParams.remove(0); // remove "this"
+				wrappedParams.remove(0); // remove "this"
+				declarationParams = declarationParams.len() == 0 ? "" : declarationParams.reduce(@(a, b) a + ", " + b);
+				wrappedParams = wrappedParams.len() == 0 ? "" : wrappedParams.reduce(@(a, b) a + ", " + b);
+
+				oldFunction = compilestring(format("return function (%s) { return this.%s.%s(%s); }", declarationParams, _q.__Prototype.SuperName, _key, wrappedParams))();
+			}
 		}
 
 		local newFunction
