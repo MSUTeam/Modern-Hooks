@@ -1,5 +1,5 @@
 ::Hooks.__Mod.hook("scripts/states/world_state", function(q){
-	q.onInitUI = @(__original) function() {
+	q.onInit = @(__original) function() {
 		__original();
 		if (::Hooks.FirstWorldInitBucket == null)
 			return;
