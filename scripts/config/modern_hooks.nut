@@ -15,6 +15,7 @@
 			Descendants = []
 		}*/
 	},
+	TreeHooks = [],
 	CachedModNames = {
 		mod_msu = "Modding Standards & Utilities",
 		dlc_lindwurm = "DLC: Lindwurm",
