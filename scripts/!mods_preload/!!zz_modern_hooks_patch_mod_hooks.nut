@@ -13,6 +13,14 @@ local lastRegistered = null;
 	::Hooks.__unverifiedRegister(codeName, version, friendlyName == null ? codeName : friendlyName, extra);
 }
 
+::mods_registerJS = function( path ) {
+	::Hooks.registerLateJS("ui/mods/" + path);
+}
+
+::mods_registerCSS = function( path ) {
+	::Hooks.registerCSS("ui/mods/" + path);
+}
+
 foreach (mod in ::mods_getRegisteredMods())
 {
 	local meta = clone mod;
