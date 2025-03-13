@@ -140,13 +140,21 @@
 		}
 		else if (oldParams.len() != newParams.len())
 		{
-			if (oldParams.len() - _oldInfos.defparams.len() == newParams.len() - _newInfos.defparams.len())
+			local oldRequiredParams = oldParams.len() - _oldInfos.defparams.len();
+			local newRequiredParams = newParams.len() - _newInfos.defparams.len();
+			if (oldRequiredParams > newRequiredParams)
 			{
-				::logInfo(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters, but the additional parameters are optional, so this is probably fine (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
+				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer required parameters (used to be %i, wrapper returned function with %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldRequiredParams.len()-1, newRequiredParams.len()-1));
 			}
-			else
+			// required params number is the same but def params are fewer than before
+			else if (newParams.len() < oldParams.len())
 			{
-				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a different number of parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1))
+				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer total parameters (used to be %i, wrapper returned function with %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1));
+			}
+			// required params number is the same but def params are more than before
+			else if (newParams.len() > oldParams.len())
+			{
+				::logInfo(format("Mod %s (%s) is wrapping function %s in bb class %s with more parameters, but the additional parameters are optional, so this is probably fine (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1));
 			}
 		}
 	}
