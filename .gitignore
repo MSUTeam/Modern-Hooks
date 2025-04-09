@@ -1,4 +1,5 @@
 BB Log
+.bbbuilder/
 *.py
 READMETEMPLATE.txt
 *.sublime-workspace
