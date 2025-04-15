@@ -44,6 +44,15 @@
 
 	function newSlot( _q, _key, _value )
 	{
+		// Allow wrapping the function in a table so it can be declared with a name that's preserved during hooks
+		if (typeof _value == "table")
+		{
+			if (_key in _value)
+				_value = _value[_key];
+			else
+				::Hooks.errorAndThrow(format("Mod %s (%s) is trying to add key \'%s\' to %s by wrapping it inside a table. But the table is missing that key.", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
+		}
+
 		if (typeof _value != "function")
 			::Hooks.errorAndThrow(format("Mod %s (%s) is trying to add key \'%s\' to %s. The key's value must be a function. Fields must instead be added to the class's \'m\' table.", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
 		local p = _q.__Prototype;
@@ -239,6 +248,10 @@
 				newFunction = _value();
 			else
 				newFunction = _value(oldFunction);
+
+			// Allow wrapping the function in a table so it can be declared with a name that's preserved during hooks
+			if (typeof newFunction == "table")
+				newFunction = newFunction[_key];
 		}
 		catch (error)
 		{
