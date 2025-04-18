@@ -1,5 +1,12 @@
 if (!("mods_hookExactClass" in this.getroottable()))
+{
+	::mods_registerMod <- function( codeName, version, friendlyName = null, extra = null )
+	{
+		friendlyName = friendlyName == null ? "" : " (" + friendlyName + ")";
+		::Hooks.errorAndQuit(format("Mod %s%s requires the original mod_hooks which is different from Modern Hooks.", codeName, friendlyName));
+	}
 	return;
+}
 ::Hooks.inform("=================Patching Modding Script Hooks=================")
 ::mods_hookExactClass = function( name, func )
 {
