@@ -43,3 +43,8 @@
 	width: 17.5rem;
 	position: relative;
 }
+
+.modern-hooks-popup .mod-raw-text {
+	-webkit-user-select: text;
+	user-select: text;
+}
