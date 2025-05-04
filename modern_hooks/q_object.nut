@@ -3,7 +3,7 @@
 	{
 		if (!(_q instanceof ::Hooks.__Q.QTree))
 			return _q.__Src;
-		return format("%s (which is a descendent of hookTree target %s)", _q.__Src, _q.__Target);
+		return format("%s (which is a descendant of hookTree target %s)", _q.__Src, _q.__Target);
 	}
 
 	function findInAncestors( _prototype, _key, _onStep = @()null )
