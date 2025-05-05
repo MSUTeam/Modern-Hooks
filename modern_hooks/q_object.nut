@@ -140,16 +140,16 @@
 		}
 		else if (oldParams.len() != newParams.len())
 		{
-			local oldRequiredParams = oldParams.len() - _oldInfos.defparams.len();
-			local newRequiredParams = newParams.len() - _newInfos.defparams.len();
-			if (oldRequiredParams > newRequiredParams)
+			local oldRequiredParamsNum = oldParams.len() - _oldInfos.defparams.len();
+			local newRequiredParamsNum = newParams.len() - _newInfos.defparams.len();
+			if (oldRequiredParamsNum > newRequiredParamsNum)
 			{
-				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer required parameters (used to be %i, wrapper returned function with %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldRequiredParams.len()-1, newRequiredParams.len()-1));
+				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer required parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldRequiredParamsNum-1, newRequiredParamsNum-1));
 			}
 			// required params number is the same but def params are fewer than before
 			else if (newParams.len() < oldParams.len())
 			{
-				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer total parameters (used to be %i, wrapper returned function with %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1));
+				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer total parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1));
 			}
 			// required params number is the same but def params are more than before
 			else if (newParams.len() > oldParams.len())
