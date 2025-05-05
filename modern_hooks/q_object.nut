@@ -124,29 +124,47 @@
 		// Exclude "this" for non-vargv and "this", "vargv", "..." for vargv funcs. Needed because we use these vars in error strings later.
 		local oldParamsNum = _oldInfos.parameters.len() - (oldHasVargv ? 3 : 1);
 		local newParamsNum = _newInfos.parameters.len() - (newHasVargv ? 3 : 1);
+		local oldRequiredParamsNum = oldParamsNum - _oldInfos.defparams.len();
+		local newRequiredParamsNum = newParamsNum - _newInfos.defparams.len();
 
-		// For vargv-containing functions we don't want to throw an error because a modder may be using an intermediate
-		// vargv function as a "safe-wrapper" for hooks.
-		// However, we print warnings if the new function increases the number of required parameters.
 		if (oldHasVargv || newHasVargv)
 		{
-			if (!oldHasVargv && newHasVargv)
+			if (oldHasVargv && newHasVargv)
 			{
-				if (newParamsNum > oldParamsNum)
-					::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a vargv-using function but is increasing the number of non-vargv parameters from %i to %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				// If both use vargv, we only print warning because this could be a case of intermediate safe-wrapper by a mod
+				if (newParamsNum != oldParamsNum)
+				{
+					::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a vargv-using function with a different number of non-vargv parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				}
 			}
 			else if (oldHasVargv && !newHasVargv)
 			{
-				if (oldParamsNum > newParamsNum)
-					::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with an increased number of non-vargv parameters (%i to %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				// If a vargv function was replaced by a non-vargv function with equal or more non-vargv params
+				// then we only print warning because it could be a case of intermediate safe-wrapper by a mod
+				if (newParamsNum >= oldParamsNum)
+				{
+					::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with a greater number of non-vargv parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				}
+				// If a vargv function was replaced by a non-vargv function with FEWER params
+				// it breaks existing calls to that function so we throw an error
+				else
+				{
+					::Hooks.error(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv using function with fewer non-vargv parameters than before (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				}
+			}
+			else if (!oldHasVargv && newHasVargv)
+			{
+				// If a non-vargv function was replaced with a vargv function with MORE REQUIRED params
+				// it breaks existing calls to that function that use fewer params, so we throw an error
+				if (newRequiredParamsNum > oldRequiredParamsNum)
+				{
+					::Hooks.error(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a vargv-using function with more required parameters than before (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldRequiredParamsNum, newRequiredParamsNum));
+				}
 			}
 		}
 		// Neither the old nor the new function uses vargv
 		else
 		{
-			local oldRequiredParamsNum = oldParamsNum - _oldInfos.defparams.len();
-			local newRequiredParamsNum = newParamsNum - _newInfos.defparams.len();
-
 			// The number of required params was increased, this can break
 			// existing calls to this function that use fewer args.
 			if (newRequiredParamsNum > oldRequiredParamsNum)
