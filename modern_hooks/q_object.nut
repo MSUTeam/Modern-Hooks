@@ -129,15 +129,13 @@
 		// However, we print warnings if the new function increases the number of required parameters.
 		if (oldHasVargv || newHasVargv)
 		{
-			if (!oldHasVargv && newHasVargv)
+			if (newParamsNum > oldParamsNum)
 			{
-				if (newParamsNum > oldParamsNum)
-					::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a vargv-using function but is increasing the number of non-vargv parameters from %i to %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a vargv-using function but is increasing the number of non-vargv parameters from %i to %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
 			}
-			else if (oldHasVargv && !newHasVargv)
+			else if (oldHasVargv && !newHasVargv && oldParamsNum > newParamsNum)
 			{
-				if (oldParamsNum > newParamsNum)
-					::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with an increased number of non-vargv parameters (%i to %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
+				::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with an increased number of non-vargv parameters (%i to %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
 			}
 		}
 		// Neither the old nor the new function uses vargv
