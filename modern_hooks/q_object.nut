@@ -119,30 +119,33 @@
 		if (_oldInfos.native == true)
 			return;
 
-		local oldParams = _oldInfos.parameters;
-		local newParams = _newInfos.parameters;
-		local oldHasVargv = oldParams[oldParams.len()-1] == "...";
-		local newHasVargv = newParams[newParams.len()-1] == "...";
+		local oldHasVargv = _oldInfos.parameters.top() == "...";
+		local newHasVargv = _newInfos.parameters.top() == "...";
+		// Exclude "this" for non-vargv and "this", "vargv", "..." for vargv funcs. Needed because we use these vars in error strings later.
+		local oldParamsNum = _oldInfos.parameters.len() - (oldHasVargv ? 3 : 1);
+		local newParamsNum = _newInfos.parameters.len() - (newHasVargv ? 3 : 1);
+
+		// For vargv-containing functions we don't want to throw an error because a modder may be using an intermediate
+		// vargv function as a "safe-wrapper" for hooks.
+		// However, we print warnings if the new function increases the number of required parameters.
 		if (oldHasVargv || newHasVargv)
 		{
-			// For vargv-using functions we only want to error if the number of non-vargv
-			// parameters is different between the old and new functions
 			if (!oldHasVargv && newHasVargv)
 			{
-				if (newParams.len() - 2 > oldParams.len())
-					::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a vargv-using function but is increasing the number of non-vargv parameters from %i to %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len() - 1, newParams.len() - 3));
+				if (newParamsNum > oldParamsNum)
+					::Hooks.warn(format("Mod %s (%s) is wrapping function %s in bb class %s with a vargv-using function but is increasing the number of non-vargv parameters from %i to %i", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
 			}
 			else if (oldHasVargv && !newHasVargv)
 			{
-				if (oldParams.len() - 2 > newParams.len())
-					::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with an increased number of non-vargv parameters (%i to %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len() - 3, newParams.len() - 1));
+				if (oldParamsNum > newParamsNum)
+					::Hooks.warn(format("Mod %s (%s) is wrapping a vargv-using function %s in bb class %s with a non-vargv function with an increased number of non-vargv parameters (%i to %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
 			}
 		}
 		// Neither the old nor the new function uses vargv
 		else
 		{
-			local oldRequiredParamsNum = oldParams.len() - _oldInfos.defparams.len();
-			local newRequiredParamsNum = newParams.len() - _newInfos.defparams.len();
+			local oldRequiredParamsNum = oldParamsNum - _oldInfos.defparams.len();
+			local newRequiredParamsNum = newParamsNum - _newInfos.defparams.len();
 
 			// The number of required params was increased, this can break
 			// existing calls to this function that use fewer args.
@@ -156,14 +159,14 @@
 
 			// The number of total params was reduced, which can break existing
 			// calls to this function which use more args.
-			if (newParams.len() < oldParams.len())
+			if (newParamsNum < oldParamsNum)
 			{
-				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer total parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1));
+				::Hooks.error(format("Mod %s (%s) is wrapping function %s in bb class %s with fewer total parameters (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
 			}
 			// We have more params than before but they are all def params, so this is fine.
-			else if (newParams.len() > oldParams.len())
+			else if (newParamsNum > oldParamsNum)
 			{
-				::logInfo(format("Mod %s (%s) is wrapping function %s in bb class %s with more parameters, but the additional parameters are optional, so this is probably fine (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParams.len()-1, newParams.len()-1));
+				::logInfo(format("Mod %s (%s) is wrapping function %s in bb class %s with more parameters, but the additional parameters are optional, so this is probably fine (used to be %i, wrapper returned function with %i)", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q), oldParamsNum, newParamsNum));
 			}
 			// Number of required params was reduced but the total number of params
 			// is the same, so this is fine.
