@@ -426,6 +426,26 @@
 
 		this[_key] = @() _value;
 	}
+
+	function MH_snipe( _key, _stateIdx )
+	{
+		local history = this.MH_getHistory(_key);
+		local oldFunction = history[_stateIdx].Old;
+		local newFunction = oldFunction;
+		for (local i = _stateIdx + 1; i < history.len(); i++)
+		{
+			local wrapper = history[i].Wrapper;
+			if (wrapper.getinfos().parameters.len() == 1)
+			{
+				newFunction = wrapper();
+			}
+			else
+			{
+				newFunction = wrapper(newFunction);
+			}
+		}
+		this[_key] = @() newFunction;
+	}
 }
 
 ::Hooks.__Q.QTree <- class extends ::Hooks.__Q.Q {
