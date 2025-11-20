@@ -296,7 +296,7 @@
 			::Hooks.BBClass[_q.__Src].History[_key] <- [];
 		local hooksSrcInfos = ::getstackinfos(2);
 		::Hooks.BBClass[_q.__Src].History[_key].push(
-			{Mod = _q.__Mod, Wrapper = _value, Old = oldFunction, New = _q.__Prototype[_key], Src = hooksSrcInfos.src + ": " + hooksSrcInfos.line}
+			{Mod = _q.__Mod, Bucket = ::Hooks.__CurrentBucket, Wrapper = _value, Old = oldFunction, New = _q.__Prototype[_key], Src = hooksSrcInfos.src + ": " + hooksSrcInfos.line}
 		);
 	}
 

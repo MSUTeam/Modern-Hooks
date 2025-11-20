@@ -34,6 +34,7 @@
 	RootState = null,
 	MainMenuState = null,
 	DebugMode = false,
+	__CurrentBucket = 0,
 	__SemVerRegex = regexp("^((?:(?:0|[1-9]\\d*)\\.){2}(?:0|[1-9]\\d*))(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"),
 	__VersionOperatorRegex = regexp("^((?:!|=|<|>)?=?)"),
 	__OverloadedFuncNameRegex = regexp("^__sqrat_ol_ \\w+_(\\d+)$"),
