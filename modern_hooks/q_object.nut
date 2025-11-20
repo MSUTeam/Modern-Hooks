@@ -292,10 +292,12 @@
 
 		_q.__Prototype[_key] <- newFunction;
 
-		if (!(_key in ::Hooks.BBClass[_q.__Src].History))
-			::Hooks.BBClass[_q.__Src].History[_key] <- [];
+		local src = _q instanceof ::Hooks.__Q.QTree ? _q.__Target : _q.__Src;
+
+		if (!(_key in ::Hooks.BBClass[src].History))
+			::Hooks.BBClass[src].History[_key] <- [];
 		local hooksSrcInfos = ::getstackinfos(2);
-		::Hooks.BBClass[_q.__Src].History[_key].push(
+		::Hooks.BBClass[src].History[_key].push(
 			{Mod = _q.__Mod, Bucket = ::Hooks.__CurrentBucket, Wrapper = _value, Old = oldFunction, New = _q.__Prototype[_key], Src = hooksSrcInfos.src + ": " + hooksSrcInfos.line}
 		);
 	}
@@ -321,12 +323,14 @@
 		local oldValue = p.m[_key];
 		p.m[_key] = _value;
 
-		if (!("m" in ::Hooks.BBClass[_q.__Src].History))
-			::Hooks.BBClass[_q.__Src].History.m <- {};
-		if (!(_key in ::Hooks.BBClass[_q.__Src].History.m))
-			::Hooks.BBClass[_q.__Src].History.m[_key] <- [];
+		local src = _q instanceof ::Hooks.__Q.QTree ? _q.__Target : _q.__Src;
+
+		if (!("m" in ::Hooks.BBClass[src].History))
+			::Hooks.BBClass[src].History.m <- {};
+		if (!(_key in ::Hooks.BBClass[src].History.m))
+			::Hooks.BBClass[src].History.m[_key] <- [];
 		local hooksSrcInfos = ::getstackinfos(2);
-		::Hooks.BBClass[_q.__Src].History.m[_key].push(
+		::Hooks.BBClass[src].History.m[_key].push(
 			{Mod = _q.__Mod, Old = oldValue, New = p.m[_key], Src = hooksSrcInfos.src + ": " + hooksSrcInfos.line}
 		);
 	}
