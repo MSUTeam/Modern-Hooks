@@ -298,6 +298,7 @@
 			TreeHooks = [],
 			RawHooks = [],
 			NativeHooks = [],
+			History = {},
 			// MetaHooks = [] to do later
 			Descendants = [],
 			Prototype = null,

@@ -291,6 +291,13 @@
 		this.validateParameters(_q, _key, oldInfos, newFunction.getinfos());
 
 		_q.__Prototype[_key] <- newFunction;
+
+		if (!(_key in ::Hooks.BBClass[_q.__Src].History))
+			::Hooks.BBClass[_q.__Src].History[_key] <- [];
+		local hooksSrcInfos = ::getstackinfos(2);
+		::Hooks.BBClass[_q.__Src].History[_key].push(
+			{Mod = _q.__Mod, Wrapper = _value, Old = oldFunction, New = _q.__Prototype[_key], Src = hooksSrcInfos.src + ": " + hooksSrcInfos.line}
+		);
 	}
 
 	function set( _q, _key, _value )
@@ -311,7 +318,17 @@
 		local p = this.findInAncestorsM(_q.__Prototype, _key);
 		if (p == null)
 			::Hooks.errorAndThrow(format("Mod %s (%s) tried to set field %s in bb class %s, but the field doesn't exist in the class or any of its ancestors", _q.__Mod.getID(), _q.__Mod.getName(), _key, this.buildTargetString(_q)));
+		local oldValue = p.m[_key];
 		p.m[_key] = _value;
+
+		if (!("m" in ::Hooks.BBClass[_q.__Src].History))
+			::Hooks.BBClass[_q.__Src].History.m <- {};
+		if (!(_key in ::Hooks.BBClass[_q.__Src].History.m))
+			::Hooks.BBClass[_q.__Src].History.m[_key] <- [];
+		local hooksSrcInfos = ::getstackinfos(2);
+		::Hooks.BBClass[_q.__Src].History.m[_key].push(
+			{Mod = _q.__Mod, Old = oldValue, New = p.m[_key], Src = hooksSrcInfos.src + ": " + hooksSrcInfos.line}
+		);
 	}
 
 	function get( _q, _key )
@@ -387,6 +404,24 @@
 			return _key in this.__Prototype;
 		return ::Hooks.__Q.findInAncestors(this.__Prototype, _key) != null;
 	}
+
+	function MH_getHistory( _key )
+	{
+		return _key in ::Hooks.BBClass[this.__Src].History ? ::Hooks.BBClass[this.__Src].History[_key] : [];
+	}
+
+	function MH_revert( _key, _value = "MH_revert" )
+	{
+		if (!(_key in ::Hooks.BBClass[this.__Src].History))
+			return;
+
+		if (_value == "MH_revert")
+		{
+			_value = this.MH_getHistory(_key)[0].Old;
+		}
+
+		this[_key] = @() _value;
+	}
 }
 
 ::Hooks.__Q.QTree <- class extends ::Hooks.__Q.Q {
@@ -437,5 +472,26 @@
 		if (_checkAncestors == false)
 			return _key in this.Q.__Prototype.m;
 		return ::Hooks.__Q.findInAncestorsM(this.Q.__Prototype, _key) != null;
+	}
+
+	function MH_getHistory( _key )
+	{
+		if (!("m" in ::Hooks.BBClass[this.Q.__Src].History))
+			return [];
+
+		return _key in ::Hooks.BBClass[this.Q.__Src].History.m ? ::Hooks.BBClass[this.Q.__Src].History.m[_key] : [];
+	}
+
+	function MH_revert( _key, _value = "MH_revert" )
+	{
+		if (!("m" in ::Hooks.BBClass[this.Q.__Src].History) || !(_key in ::Hooks.BBClass[this.Q.__Src].History.m))
+			return;
+
+		if (_value == "MH_revert")
+		{
+			_value = this.MH_getHistory(_key)[0].Old;
+		}
+
+		this[_key] = _value;
 	}
 }
