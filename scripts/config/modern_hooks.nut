@@ -18,6 +18,7 @@
 	TreeHooks = [],
 	CachedModNames = {
 		mod_msu = "Modding Standards & Utilities",
+		mod_modern_engine = "Modern Engine",
 		dlc_lindwurm = "DLC: Lindwurm",
 		dlc_unhold = "DLC: Beasts & Exploration",
 		dlc_wildmen = "DLC: Warriors of the North",
