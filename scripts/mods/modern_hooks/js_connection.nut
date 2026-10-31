@@ -87,10 +87,20 @@ this.js_connection <- {
 
 	function queryData()
 	{
+		local mods = [];
+		foreach (mod in ::Hooks.Mods)
+		{
+			mods.push({
+				ID = mod.getID(),
+				Name = mod.getName(),
+				Version = mod.getVersionString()
+			});
+		}
 		return {
 			JS = ::Hooks.JSFiles,
 			CSS = ::Hooks.CSSFiles,
-			LateJS = ::Hooks.LateJSFiles
+			LateJS = ::Hooks.LateJSFiles,
+			Mods = mods
 		}
 	}
 

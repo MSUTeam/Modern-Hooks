@@ -113,7 +113,117 @@ RootScreenFPSModule.prototype.setFPS = function (_value)
 var Hooks = {
 	registerScreens : registerScreens,
 	screenInit : false,
-	errorMsg : null
+	errorMsg : null,
+	__Mods : {}, // ID -> {ID, Name, Version}, filled from queryData before any mod JS loads
+	// the same patterns as ::Hooks.__SemVerRegex, __ModOperatorAndVersionRegex and __IntFloatRegex
+	__SemVerRegex : /^((?:(?:0|[1-9]\d*)\.){2}(?:0|[1-9]\d*))(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/,
+	__OperatorAndVersionRegex : /^((?:!|>|<|=)=?) ([^ ]+)$/,
+	__IntFloatRegex : /^\d+(?:\.\d+)?$/
+}
+
+Hooks.hasMod = function( _modID )
+{
+	return Object.prototype.hasOwnProperty.call(this.__Mods, _modID);
+}
+
+// True if the mod is registered and its version meets _requirement, an operator and a version as in
+// mod.require(): "mod_x >= 1.2.0" is Hooks.hasModVersion("mod_x", ">= 1.2.0"). Operators: == (or =), !=
+// (or !), <, <=, >, >=. Versions compare as semver, the same as ::Hooks.SQClass.ModVersion, never as strings.
+Hooks.hasModVersion = function( _modID, _requirement )
+{
+	if (typeof _requirement != "string")
+		throw new Error("Hooks.hasModVersion: _requirement must be a string like \">= 1.0.0\"");
+	var match = this.__OperatorAndVersionRegex.exec(_requirement.trim());
+	if (match === null)
+		throw new Error("Hooks.hasModVersion: requirement '" + _requirement + "' isn't an operator and a version like \">= 1.0.0\"");
+	var required = this.__parseVersion(match[2]);
+	if (required === null)
+		throw new Error("Hooks.hasModVersion: '" + match[2] + "' isn't a semantic version (see https://semver.org/)");
+	if (!this.hasMod(_modID))
+		return false;
+
+	var version = this.__parseVersion(this.__Mods[_modID].Version);
+	var cmp;
+	// as in ::Hooks.SQClass.CompatibilityData.validateModVersion: a float version (Adam's hooks) counts as
+	// newer than any semver requirement, and a semver version as older than any float requirement
+	if (typeof version == "number" && typeof required != "number")
+		cmp = 1;
+	else if (typeof version != "number" && typeof required == "number")
+		cmp = -1;
+	else if (typeof version == "number")
+		cmp = version > required ? 1 : version < required ? -1 : 0;
+	else
+		cmp = this.__compareSemVer(version, required);
+
+	switch (match[1])
+	{
+		case "=": case "==": return cmp == 0;
+		case "!": case "!=": return cmp != 0;
+		case "<": return cmp < 0;
+		case "<=": return cmp <= 0;
+		case ">": return cmp > 0;
+		case ">=": return cmp >= 0;
+	}
+}
+
+// Returns {Major, Minor, Patch, PreRelease}, a number for a float version, or null if it's neither.
+Hooks.__parseVersion = function( _string )
+{
+	var match = this.__SemVerRegex.exec(_string);
+	if (match !== null)
+	{
+		var parts = match[1].split(".");
+		return {
+			Major : parseInt(parts[0], 10),
+			Minor : parseInt(parts[1], 10),
+			Patch : parseInt(parts[2], 10),
+			PreRelease : match[2] === undefined ? null : match[2].split(".")
+		};
+	}
+	if (this.__IntFloatRegex.test(_string))
+		return parseFloat(_string);
+	return null;
+}
+
+// A port of ::Hooks.SQClass.ModVersion._cmp. Returns -1, 0 or 1.
+Hooks.__compareSemVer = function( _a, _b )
+{
+	var keys = ["Major", "Minor", "Patch"];
+	for (var i = 0; i < keys.length; ++i)
+	{
+		if (_a[keys[i]] > _b[keys[i]]) return 1;
+		if (_a[keys[i]] < _b[keys[i]]) return -1;
+	}
+	if (_a.PreRelease === null || _b.PreRelease === null)
+	{
+		if (_a.PreRelease === null && _b.PreRelease !== null) return 1;
+		if (_a.PreRelease !== null && _b.PreRelease === null) return -1;
+		return 0;
+	}
+	var isInteger = /^\d+$/;
+	for (var i = 0; i < Math.min(_a.PreRelease.length, _b.PreRelease.length); ++i)
+	{
+		var x = _a.PreRelease[i], y = _b.PreRelease[i];
+		var isInt1 = isInteger.test(x), isInt2 = isInteger.test(y);
+		if (isInt1 && isInt2)
+		{
+			var int1 = parseInt(x, 10), int2 = parseInt(y, 10);
+			if (int1 < int2) return -1;
+			if (int1 > int2) return 1;
+		}
+		else if (isInt1 || isInt2)
+		{
+			return isInt1 ? -1 : 1;
+		}
+		else
+		{
+			if (x > y) return 1;
+			if (x < y) return -1;
+		}
+	}
+	if (_a.PreRelease.length > _b.PreRelease.length) return 1;
+	if (_a.PreRelease.length < _b.PreRelease.length) return -1;
+	return 0;
 }
 
 // Define ModernHooksConnection
@@ -137,6 +247,8 @@ ModernHooksConnection.prototype.onConnection = function( _handle )
 	var self = this;
 	SQ.call(this.mSQHandle, "queryData", null, function (_data)
 	{
+		for (var i = 0; i < _data.Mods.length; ++i)
+			Hooks.__Mods[_data.Mods[i].ID] = _data.Mods[i];
 
 		var jsFiles = _data.JS;
 		for (var i = 0; i < jsFiles.length-1; ++i) // the last one has an onload action appended to it
