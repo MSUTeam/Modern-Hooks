@@ -41,4 +41,31 @@ foreach (key, value in ::Const.DLC)
 	{
 		::logError("Something went wrong when trying to use MSU's update checker in modern hooks: " + error);
 	}
+
+
+	::Hooks.__Mod.hook("scripts/items/weapons/knife", function(q) {
+		q.m.NewField <- 5;
+
+		q.m.NewField = 6;
+
+		q.getID = @(__original) function()
+		{
+			::logInfo("first hook");
+			return __original();
+		}
+
+		q.getID = @(__original) function()
+		{
+			::logInfo("second hook")
+			return __original();
+		}
+
+		q.MH_snipe("getID", 0);
+	});
 });
+
+::Hooks.__Mod.queue(function() {
+	local knife = ::new("scripts/items/weapons/knife");
+	::logInfo(knife.getID());
+	::logInfo(knife.m.NewField);
+}, ::Hooks.QueueBucket.AfterHooks);

@@ -91,6 +91,7 @@
 ::Hooks.__executeQueuedFunctions <- function( _queuedFunctions )
 {
 	local root = getroottable();
+	::Hooks.__CurrentBucket = _queuedFunctions[0].Bucket;
 	foreach (queuedFunction in _queuedFunctions)
 	{
 		local mod = queuedFunction.getMod();
@@ -298,6 +299,7 @@
 			TreeHooks = [],
 			RawHooks = [],
 			NativeHooks = [],
+			History = {},
 			// MetaHooks = [] to do later
 			Descendants = [],
 			Prototype = null,
@@ -322,7 +324,8 @@
 	this.__initClass(_src);
 	this.BBClass[_src].RawHooks.push({
 		Mod = _mod,
-		hook = _func
+		hook = _func,
+		Bucket = ::Hooks.__CurrentBucket
 	});
 }
 
@@ -339,7 +342,8 @@
 	// useful for debugging
 	this.BBClass[_src].TreeHooks.push({
 		Mod = _mod,
-		hook = _func
+		hook = _func,
+		Bucket = ::Hooks.__CurrentBucket
 	});
 	// actually used by the queue logic
 	this.TreeHooks.push({
@@ -347,6 +351,7 @@
 		Mod = _mod,
 		hook = _func,
 		Src = _src,
+		Bucket = ::Hooks.__CurrentBucket
 	});
 }
 
@@ -365,6 +370,7 @@
 	{
 		try
 		{
+			::Hooks.__CurrentBucket = hookInfo.Bucket;
 			hookInfo.hook.call(root, p);
 		}
 		catch (error)
@@ -426,6 +432,7 @@
 		{
 			try
 			{
+				::Hooks.__CurrentBucket = hookInfo.Bucket;
 				hookInfo.hook.call(root, p);
 			}
 			catch (error)
