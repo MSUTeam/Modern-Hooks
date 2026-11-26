@@ -297,7 +297,8 @@
 		this.BBClass[_src] <- {
 			TreeHooks = [],
 			RawHooks = [],
-			NativeHooks = [],
+			NativeHooks = [], // from normal hooks: apply to instances of this class and its descendants
+			TreeNativeHooks = [], // from tree hooks: apply to instances of exactly this class
 			// MetaHooks = [] to do later
 			Descendants = [],
 			Prototype = null,
@@ -373,19 +374,52 @@
 			::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
 		}
 	}
-	foreach (hookInfo in this.BBClass[_src].NativeHooks)
+	this.BBClass[_src].Processed = true;
+}
+
+// Called for every class from __finalizeHooks, i.e. after every class has inherited its copies of its ancestors.
+// So the wrapper put on this class's own onInit reaches only instances of exactly this class, never descendants
+// (their copies of this class were made before). The wrapper applies to the instance, in this order (each one
+// ends up outside the previous ones), the same layering that __original hooks produce:
+// - the normal native hooks of each class from the root ancestor down to this class, each in registration order
+// - then this class's tree native hooks, in tree hook order
+::Hooks.__wrapOnInitForNativeHooks <- function( _src )
+{
+	local bbclass = this.BBClass[_src];
+	local chain = [];
+	local p = bbclass.Prototype;
+	local src = _src;
+	while (true)
 	{
-		try
-		{
-			hookInfo.hook.call(root);
-		}
-		catch (error)
-		{
-			local versionString = typeof hookInfo.Mod.getVersion() == "float" ? hookInfo.Mod.getVersion().tostring() : hookInfo.Mod.getVersion().getVersionString();
-			::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its native hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, _src));
+		chain.insert(0, src);
+		if (!("SuperName" in p))
+			break;
+		p = p[p.SuperName];
+		src = ::IO.scriptFilenameByHash(p.ClassNameHash);
+	}
+	local nativeHooks = [];
+	foreach (s in chain)
+	{
+		if (s in this.BBClass)
+			nativeHooks.extend(this.BBClass[s].NativeHooks);
+	}
+	nativeHooks.extend(bbclass.TreeNativeHooks);
+	if (nativeHooks.len() == 0)
+		return;
+	try
+	{
+		local q = ::Hooks.__Q.Q(nativeHooks[0].Mod, _src, bbclass.Prototype);
+		q.onInit = @(__original) function() {
+			foreach (hookInfo in nativeHooks)
+				hookInfo.apply(this);
+			return __original();
 		}
 	}
-	this.BBClass[_src].Processed = true;
+	catch (error)
+	{
+		local relevantMods = nativeHooks.map(@(hookInfo) format("%s (%s)", hookInfo.Mod.getID(), hookInfo.Mod.getName())).reduce(@(a, b) a + ", " + b);
+		::Hooks.errorAndQuit(format("Wrapping onInit for the native hooks of %s on bb class %s failed with error: %s", relevantMods, _src, error));
+	}
 }
 
 ::Hooks.__finalizeHooks <- function()
@@ -434,6 +468,12 @@
 				::Hooks.errorAndQuit(format("Mod %s (%s) version %s had an error (%s) during its tree hook on bb class %s.", hookInfo.Mod.getID(), hookInfo.Mod.getName(), versionString, error, hookInfo.Src));
 			}
 		}
+	}
+	// native hooks: only now, after all tree hooks have run and every class has copied its ancestors
+	foreach (src, bbclass in this.BBClass)
+	{
+		if (bbclass.Prototype != null)
+			this.__wrapOnInitForNativeHooks(src);
 	}
 }
 
