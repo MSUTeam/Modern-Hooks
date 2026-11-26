@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed several `__native` wrappers on the same function running in the reverse order. The last-registered wrapper now runs first, as with every other hook. `__native` wrappers now layer exactly like `__original` wrappers.
+- Fixed `__native` wrappers in `hookTree` hooks being silently ignored. They now apply to the hookTree target and its descendants, on top of the class's normal `__native` wrappers, the same way `__original` wrappers do. Each instance gets each tree wrapper once.
 
 ## 0.7.0 - 2026-11-01
 

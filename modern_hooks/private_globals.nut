@@ -298,6 +298,7 @@
 			TreeHooks = [],
 			RawHooks = [],
 			NativeHooks = [], // from normal hooks: apply to instances of this class and its descendants
+			TreeNativeHooks = [], // from tree hooks: apply to instances of exactly this class
 			// MetaHooks = [] to do later
 			Descendants = [],
 			Prototype = null,
@@ -380,7 +381,8 @@
 // So the wrapper put on this class's own onInit reaches only instances of exactly this class, never descendants
 // (their copies of this class were made before). The wrapper applies to the instance, in this order (each one
 // ends up outside the previous ones), the same layering that __original hooks produce:
-// the native hooks of each class from the root ancestor down to this class, each in registration order
+// - the normal native hooks of each class from the root ancestor down to this class, each in registration order
+// - then this class's tree native hooks, in tree hook order
 ::Hooks.__wrapOnInitForNativeHooks <- function( _src )
 {
 	local bbclass = this.BBClass[_src];
@@ -401,6 +403,7 @@
 		if (s in this.BBClass)
 			nativeHooks.extend(this.BBClass[s].NativeHooks);
 	}
+	nativeHooks.extend(bbclass.TreeNativeHooks);
 	if (nativeHooks.len() == 0)
 		return;
 	try
@@ -466,7 +469,7 @@
 			}
 		}
 	}
-	// native hooks: only now, after every class has copied its ancestors
+	// native hooks: only now, after all tree hooks have run and every class has copied its ancestors
 	foreach (src, bbclass in this.BBClass)
 	{
 		if (bbclass.Prototype != null)
