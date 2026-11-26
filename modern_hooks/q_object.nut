@@ -203,14 +203,12 @@
 		p = this.findInAncestors(_q.__Prototype, _key);
 		if (p != null)
 			::Hooks.error(format("Mod %s (%s) is using a native function wrapper on function %s in class %s, but that function already exists in %s which is either the target class or an ancestor", _q.__Mod.getID(), _q.__Mod.getName(), _key, _q.__Src, ::IO.scriptFilenameByHash(p.ClassNameHash)));
+		// Applied to each instance by the onInit wrappers made in ::Hooks.__wrapOnInitForNativeHooks
 		::Hooks.BBClass[_q.__Src].NativeHooks.push({
 			Mod = _q.__Mod,
-			hook = function(){
-				_q.onInit = @(__original) function() {
-					_q.__Prototype = this;
-					::Hooks.__Q.setSquirrel(_q, _key, _value, true)
-					return __original();
-				}
+			apply = function( _instance ) {
+				_q.__Prototype = _instance;
+				::Hooks.__Q.setSquirrel(_q, _key, _value, true);
 			}
 		});
 	}
