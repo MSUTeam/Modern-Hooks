@@ -320,6 +320,10 @@
 ::Hooks.__rawHook <- function( _mod, _src, _func )
 {
 	this.__initClass(_src);
+	// A class is processed when another class first inherits from it (e.g. when a mod instantiates a descendant early),
+	// or in __finalizeHooks. We warn instead of error, for compatibility with mods that instantiate classes early (e.g. MSU's JS connection)
+	if (this.BBClass[_src].Processed)
+		::Hooks.warn(format("Mod %s (%s) is hooking bb class %s, but that class was already processed for hooks (another class already inherited from it, e.g. because a mod instantiated a descendant early, or hooks were already finalized), so this hook will never run", _mod.getID(), _mod.getName(), _src));
 	this.BBClass[_src].RawHooks.push({
 		Mod = _mod,
 		hook = _func
