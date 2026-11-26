@@ -398,7 +398,7 @@
 		{
 			if (bbclass.Prototype == null)
 			{
-				local warnString = format("The BB class '%s' was never proceessed for hooks", src);
+				local warnString = format("The BB class '%s' was never processed for hooks", src);
 				local relevantMods = bbclass.RawHooks.map(@(hookInfo) format("%s (%s)", hookInfo.Mod.getID(), hookInfo.Mod.getName())).reduce(@(a, b) a + ", " + b);
 
 				if (relevantMods != null)
